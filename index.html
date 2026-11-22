@@ -470,6 +470,22 @@ button.kvbtn:hover { background: #e9ecef; }
 .jrow .s { display: block; font-size: 15px; color: var(--fg); overflow-wrap: anywhere; white-space: pre-wrap; line-height: 1.55; }
 .jrow .n { display: block; font-size: 13px; color: var(--fg3); overflow-wrap: anywhere; margin-top: 2px; }
 .monthlabel { font-size: 13px; font-weight: 700; color: var(--fg3); padding: 8px 4px 0; }
+.photogrid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+.photogrid .ph { position: relative; aspect-ratio: 1; max-width: 100%; border-radius: 12px; overflow: hidden; background: var(--gray-soft); }
+.photogrid .ph img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.photogrid .ph button { position: absolute; top: 4px; right: 4px; width: 28px; height: 28px; border-radius: 50%; border: 0; background: rgba(25, 31, 40, .7); color: #fff; display: grid; place-items: center; padding: 0; }
+.photogrid .ph button svg { width: 14px; height: 14px; }
+.photogrid .addph { aspect-ratio: 1; max-width: 100%; border-radius: 12px; border: 2px dashed var(--line); display: grid; place-items: center; align-content: center; gap: 4px; color: var(--fg3); font-size: 13px; font-weight: 600; cursor: pointer; background: transparent; }
+.photogrid .addph svg { width: 22px; height: 22px; }
+.photogrid .addph.busy { opacity: .5; pointer-events: none; }
+.thumbs { display: flex; gap: 6px; margin-top: 8px; }
+.thumbs button { border: 0; padding: 0; width: 64px; height: 64px; border-radius: 10px; overflow: hidden; background: var(--gray-soft); flex: none; }
+.thumbs img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.viewer { position: fixed; inset: 0; z-index: 90; background: rgba(0, 0, 0, .92); display: grid; place-items: center;
+  padding: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-right, 0px)) max(16px, env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
+.viewer img { max-width: 100%; max-height: 100%; object-fit: contain; border-radius: 6px; }
+.viewer .vclose { position: absolute; top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); width: 44px; height: 44px; border-radius: 50%; border: 0; background: rgba(255, 255, 255, .16); color: #fff; font-size: 20px; }
+.viewer .vnote { position: absolute; bottom: max(16px, env(safe-area-inset-bottom, 0px)); left: 0; right: 0; text-align: center; color: rgba(255, 255, 255, .75); font-size: 13px; }
 .nowbar { display: grid; gap: 6px; }
 </style>
 </head>
@@ -601,6 +617,8 @@ button.kvbtn:hover { background: #e9ecef; }
   </div>
 </div>
 
+<div class="viewer" id="viewer" hidden role="dialog" aria-label="사진 크게 보기"><img id="viewer-img" alt=""><button class="vclose" type="button" id="viewer-close" aria-label="닫기">✕</button><p class="vnote" id="viewer-note"></p></div>
+
 <!-- Journal sheet -->
 <div class="sheet-wrap" id="sh-review" hidden>
   <form class="sheet" id="f-review" novalidate>
@@ -608,6 +626,11 @@ button.kvbtn:hover { background: #e9ecef; }
     <div class="field"><label for="rv-date">날짜</label><input id="rv-date" type="date"></div>
     <div class="field"><span class="lbl">오늘 날씨는 어땠나요? (마음 날씨)</span><div class="moodpick" id="rv-mood" role="radiogroup" aria-label="마음 날씨"></div></div>
     <div class="field"><label for="rv-good">한 줄 일기</label><textarea id="rv-good" maxlength="500" placeholder="오늘 있었던 일, 느낀 점을 한 줄로"></textarea></div>
+    <div class="field"><span class="lbl">사진 <span class="muted" id="rv-photo-count"></span></span>
+      <div class="photogrid" id="rv-photos"></div>
+      <input id="rv-file" type="file" accept="image/*" multiple hidden>
+      <p class="muted small" id="rv-photo-note" style="margin:0" hidden></p>
+    </div>
     <div class="field"><label for="rv-change">내일 가장 먼저 할 일</label><input id="rv-change" type="text" maxlength="120" placeholder="예: 출근하자마자 메일 정리"></div>
     <div class="note err" id="rv-err" hidden></div>
     <div class="delopts" id="rv-del"></div>
@@ -788,7 +811,8 @@ button.kvbtn:hover { background: #e9ecef; }
   const firstOfMonth = d => new Date(d.getFullYear(), d.getMonth(), 1);
 
   // ================================================================ state
-  const S = { events: [], ledger: [], todos: [], routines: [], days: [], focus: [], briefings: [] };
+  const S = { events: [], ledger: [], todos: [], routines: [], days: [], focus: [], briefings: [], photos: [] };
+  let photoCol = null, photoFullCol = null;
   let budget = 0, hours = { ...DEFAULT_HOURS };
   let mode = "loading";        // loading | db | local
   let canWrite = true;
@@ -866,7 +890,8 @@ button.kvbtn:hover { background: #e9ecef; }
   // journal fields (older records used good/change; read them as the line and the next step)
   const entryLine = d => (d && (d.line || d.good)) || "";
   const entryNext = d => (d && (d.tomorrow || d.change)) || "";
-  const hasEntry = d => !!(d && (entryLine(d) || entryNext(d) || d.mood));
+  const photosOn = ds => S.photos.filter(x => x.date === ds).sort((a, b) => (a.createdAt || "").localeCompare(b.createdAt || ""));
+  const hasEntry = d => !!(d && (entryLine(d) || entryNext(d) || d.mood || (d.id && photosOn(d.id).length)));
   const energyOf = d => { const v = Number(d && d.energy) || 0; return v > 5 ? Math.round(v / 20) : v; };
   const focusMin = pred => S.focus.reduce((a, f) => a + (pred(f) ? Number(f.minutes) || 0 : 0), 0);
   const activeDay = ds => hasEntry(dayDoc(ds)) || (dayDoc(ds).routinesDone || []).length > 0 || S.focus.some(f => f.date === ds);
@@ -1197,6 +1222,10 @@ button.kvbtn:hover { background: #e9ecef; }
     const m = MOOD[d.mood];
     return m ? `<span class="mood-ico" data-tone="${m.tone}" title="${m.name}">${MOOD_ICON[m.id]}</span>` : `<span class="mood-ico" data-tone="gray">${ICON.pen}</span>`;
   }
+  function thumbsHtml(ds) {
+    const ph = photosOn(ds);
+    return ph.length ? `<span class="thumbs">${ph.map(x => `<button type="button" data-photo="${esc(x.id)}" aria-label="사진 크게 보기"><img src="${x.thumb}" alt=""></button>`).join("")}</span>` : "";
+  }
   function renderReview() {
     const today = todayStr(), d = dayDoc(today);
     const past = S.days.filter(x => hasEntry(x) && x.id !== today && DATE_RE.test(x.id)).sort((a, b) => b.id.localeCompare(a.id)).slice(0, 120);
@@ -1204,16 +1233,16 @@ button.kvbtn:hover { background: #e9ecef; }
     for (const x of past) {
       const dt = parse(x.id), mk = `${dt.getFullYear()}년 ${dt.getMonth() + 1}월`;
       if (mk !== lastM) { listHtml += `<div class="monthlabel">${mk}</div>`; lastM = mk; }
-      listHtml += `<button type="button" class="jrow" data-act="reflect" data-date="${x.id}">${moodBadge(x)}<span><span class="t">${dt.getDate()}일 ${DOW[dt.getDay()]}요일${MOOD[x.mood] ? ` · ${MOOD[x.mood].name}` : ""}</span>${entryLine(x) ? `<span class="s">${esc(entryLine(x))}</span>` : ""}${entryNext(x) ? `<span class="n">→ ${esc(entryNext(x))}</span>` : ""}</span></button>`;
+      listHtml += `<button type="button" class="jrow" data-act="reflect" data-date="${x.id}">${moodBadge(x)}<span><span class="t">${dt.getDate()}일 ${DOW[dt.getDay()]}요일${MOOD[x.mood] ? ` · ${MOOD[x.mood].name}` : ""}</span>${entryLine(x) ? `<span class="s">${esc(entryLine(x))}</span>` : ""}${entryNext(x) ? `<span class="n">→ ${esc(entryNext(x))}</span>` : ""}${thumbsHtml(x.id)}</span></button>`;
     }
     const streak = streakFrom(ds => hasEntry(dayDoc(ds)));
     $("tab-review").innerHTML = `
       ${appbar("일기", canWrite ? `<button class="btn sm" type="button" data-act="reflect-other">다른 날 쓰기</button>` : "")}
       <section class="card">
         ${hasEntry(d) ? `<div class="h2row"><h2>오늘</h2><span class="muted small">${streak ? `${streak}일째 쓰는 중` : ""}</span></div>
-          <div class="jrow" style="padding:0">${moodBadge(d)}<span><span class="t">${MOOD[d.mood] ? MOOD[d.mood].name : "날씨 없음"}</span>${entryLine(d) ? `<span class="s">${esc(entryLine(d))}</span>` : ""}${entryNext(d) ? `<span class="n">내일 먼저 → ${esc(entryNext(d))}</span>` : ""}</span></div>
+          <div class="jrow" style="padding:0">${moodBadge(d)}<span><span class="t">${MOOD[d.mood] ? MOOD[d.mood].name : "날씨 없음"}</span>${entryLine(d) ? `<span class="s">${esc(entryLine(d))}</span>` : ""}${entryNext(d) ? `<span class="n">내일 먼저 → ${esc(entryNext(d))}</span>` : ""}${thumbsHtml(today)}</span></div>
           ${canWrite ? `<button class="btn" type="button" data-act="reflect" data-date="${today}">고치기</button>` : ""}`
-        : `<h2>오늘은 어떤 하루였나요?</h2><p class="muted" style="margin:0">마음 날씨 하나, 한 줄 일기, 내일 먼저 할 일 하나. 1분이면 돼요.</p>${canWrite ? `<button class="btn big primary" type="button" data-act="reflect" data-date="${today}">오늘 일기 쓰기</button>` : ""}`}
+        : `<h2>오늘은 어떤 하루였나요?</h2><p class="muted" style="margin:0">마음 날씨 하나, 한 줄 일기, 사진 몇 장, 내일 먼저 할 일 하나. 1분이면 돼요.</p>${canWrite ? `<button class="btn big primary" type="button" data-act="reflect" data-date="${today}">오늘 일기 쓰기</button>` : ""}`}
       </section>
       <section class="card"><h2>지난 일기</h2>
         <div>${listHtml || `<div class="empty-line">아직 지난 일기가 없어요. 오늘부터 한 줄씩 쌓아 보세요.</div>`}</div>
@@ -1313,7 +1342,7 @@ button.kvbtn:hover { background: #e9ecef; }
   document.addEventListener("keydown", e => {
     if (e.key !== "Escape") return;
     const open = [...document.querySelectorAll(".sheet-wrap")].find(w => !w.hidden);
-    if (open) closeSheet(open.id); else if (!$("chatview").hidden) closeChat();
+    if (!$("viewer").hidden) closePhoto(); else if (open) closeSheet(open.id); else if (!$("chatview").hidden) closeChat();
   });
   function showErr(id, msg) { const el = $(id); el.textContent = msg; el.hidden = !msg; }
   for (const id of ["tx-amount"]) $(id).addEventListener("input", e => { const d = digits(e.target.value); e.target.value = d ? Number(d).toLocaleString("ko-KR") : ""; });
@@ -1521,8 +1550,62 @@ button.kvbtn:hover { background: #e9ecef; }
   // ---- journal sheet
   let rvDate = "";
   $("rv-mood").innerHTML = MOODS.map(m => `<label data-tone="${m.tone}"><input type="radio" name="rvmood" value="${m.id}" id="rv-mood-${m.id}"><span>${MOOD_ICON[m.id]}${m.name}</span></label>`).join("");
+  // photos in the open sheet: saved ones keep their id, new ones carry their resized images until "저장하기"
+  const MAX_PHOTOS = 3;
+  let rvPhotos = [], rvRemoved = [], rvBusy = false;
+  function loadImage(file) {
+    return new Promise((res, rej) => {
+      const url = URL.createObjectURL(file), img = new Image();
+      img.onload = () => { URL.revokeObjectURL(url); res(img); };
+      img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("decode")); };
+      img.src = url;
+    });
+  }
+  function toJpeg(img, maxSide, maxBytes) {
+    const w0 = img.naturalWidth || img.width, h0 = img.naturalHeight || img.height;
+    let scale = Math.min(1, maxSide / Math.max(w0, h0)), out = "";
+    for (let i = 0; i < 6; i++) {
+      const c = document.createElement("canvas");
+      c.width = Math.max(1, Math.round(w0 * scale)); c.height = Math.max(1, Math.round(h0 * scale));
+      const g = c.getContext("2d"); g.fillStyle = "#fff"; g.fillRect(0, 0, c.width, c.height); g.drawImage(img, 0, 0, c.width, c.height);
+      for (const q of [0.82, 0.7, 0.58]) { out = c.toDataURL("image/jpeg", q); if (out.length <= maxBytes) return { data: out, w: c.width, h: c.height }; }
+      scale *= 0.75;
+    }
+    return { data: out, w: 0, h: 0 };
+  }
+  function renderRvPhotos() {
+    const can = mode === "db" && canWrite, left = MAX_PHOTOS - rvPhotos.length;
+    $("rv-photo-count").textContent = `${rvPhotos.length}/${MAX_PHOTOS}`;
+    $("rv-photos").innerHTML = rvPhotos.map((x, i) => `<div class="ph"><img src="${x.thumb}" alt="일기 사진 ${i + 1}"><button type="button" data-rvdel="${i}" aria-label="사진 ${i + 1} 빼기">${ICON.x}</button></div>`).join("")
+      + (can && left > 0 ? `<label class="addph${rvBusy ? " busy" : ""}" for="rv-file">${rvBusy ? "줄이는 중…" : `${ICON.plus}사진 추가`}</label>` : "");
+    const nt = $("rv-photo-note");
+    nt.hidden = can; if (!can) nt.textContent = "로그인해서 쓸 때만 사진을 넣을 수 있어요.";
+  }
+  $("rv-file").addEventListener("change", async e => {
+    const files = [...(e.target.files || [])].slice(0, MAX_PHOTOS - rvPhotos.length);
+    e.target.value = "";
+    if (!files.length) return;
+    rvBusy = true; renderRvPhotos(); showErr("rv-err", "");
+    let failed = 0;
+    for (const f of files) {
+      try {
+        const img = await loadImage(f);
+        const full = toJpeg(img, 1280, 650000), thumb = toJpeg(img, 320, 40000);
+        rvPhotos.push({ id: newId(), thumb: thumb.data, full: full.data, w: full.w, h: full.h, isNew: true });
+      } catch (ex) { failed++; }
+    }
+    rvBusy = false; renderRvPhotos();
+    if (failed) showErr("rv-err", `사진 ${failed}장을 열지 못했어요. JPG나 PNG 사진으로 다시 골라 주세요.`);
+  });
+  $("rv-photos").addEventListener("click", e => {
+    const b = e.target.closest("[data-rvdel]"); if (!b) return;
+    const [x] = rvPhotos.splice(Number(b.dataset.rvdel), 1);
+    if (x && !x.isNew) rvRemoved.push(x.id);
+    renderRvPhotos();
+  });
   function fillJournal(ds) {
     rvDate = ds;
+    rvPhotos = photosOn(ds).map(x => ({ id: x.id, thumb: x.thumb })); rvRemoved = []; rvBusy = false; renderRvPhotos();
     const d = dayDoc(ds), rel = ["오늘", "어제"].includes(dayName(ds));
     $("rv-head").textContent = rel ? `${dayName(ds)} 일기` : `${shortDate(ds)} 일기`;
     $("rv-date").value = ds;
@@ -1531,8 +1614,13 @@ button.kvbtn:hover { background: #e9ecef; }
     showErr("rv-err", "");
     if (!hasEntry(d)) $("rv-del").innerHTML = "";
     else delButtons("rv-del", "이날 일기 삭제", async () => {
-      const undo = dayUndo(ds);
-      try { await saveDay(ds, { mood: "", line: "", tomorrow: "", good: "", change: "", journaledAt: "" }); closeSheet("sh-review"); toast("일기를 지웠어요", undo); }
+      const undo = dayUndo(ds), had = photosOn(ds);
+      try {
+        for (const x of had) { photoCol.doc(x.id).delete().catch(writeFailed); photoFullCol.doc(x.id).delete().catch(writeFailed); }
+        S.photos = S.photos.filter(x => x.date !== ds);
+        await saveDay(ds, { mood: "", line: "", tomorrow: "", good: "", change: "", journaledAt: "" }); closeSheet("sh-review");
+        toast(had.length ? `일기와 사진 ${had.length}장을 지웠어요` : "일기를 지웠어요", had.length ? null : undo);
+      }
       catch (ex) { showErr("rv-err", "삭제하지 못했어요. 잠시 후 다시 시도해 주세요."); }
     });
   }
@@ -1551,10 +1639,41 @@ button.kvbtn:hover { background: #e9ecef; }
     e.preventDefault(); if (!rvDate) return;
     const mood = (document.querySelector('input[name="rvmood"]:checked') || {}).value || "";
     const line = $("rv-good").value.trim(), tomorrow = $("rv-change").value.trim();
-    if (!mood && !line && !tomorrow) { showErr("rv-err", "날씨를 고르거나 한 줄이라도 적어 주세요."); return; }
-    try { await saveDay(rvDate, { mood, line, tomorrow, good: "", change: "", journaledAt: new Date().toISOString() }); closeSheet("sh-review"); toast("일기를 남겼어요"); }
+    if (rvBusy) { showErr("rv-err", "사진을 줄이는 중이에요. 잠시 후 다시 눌러 주세요."); return; }
+    if (!mood && !line && !tomorrow && !rvPhotos.length) { showErr("rv-err", "날씨를 고르거나, 한 줄이나 사진이라도 남겨 주세요."); return; }
+    try {
+      if (mode === "db") {
+        const nowIso = new Date().toISOString();
+        for (const id of rvRemoved) { photoCol.doc(id).delete().catch(writeFailed); photoFullCol.doc(id).delete().catch(writeFailed); }
+        S.photos = S.photos.filter(x => !rvRemoved.includes(x.id));
+        rvPhotos.forEach((x, i) => {
+          if (!x.isNew) return;
+          const createdAt = new Date(Date.now() + i).toISOString();
+          photoFullCol.doc(x.id).set({ date: rvDate, data: x.full, createdAt }).catch(writeFailed);
+          photoCol.doc(x.id).set({ date: rvDate, thumb: x.thumb, w: x.w, h: x.h, createdAt, updatedAt: nowIso }).catch(writeFailed);
+          S.photos.push({ id: x.id, date: rvDate, thumb: x.thumb, createdAt });
+        });
+      }
+      await saveDay(rvDate, { mood, line, tomorrow, good: "", change: "", photoCount: rvPhotos.length, journaledAt: new Date().toISOString() });
+      rvPhotos = []; rvRemoved = [];
+      closeSheet("sh-review"); toast("일기를 남겼어요");
+    }
     catch (ex) { showErr("rv-err", saveErr(ex)); }
   });
+
+  // ---- photo viewer
+  async function openPhoto(id) {
+    const x = S.photos.find(p => p.id === id); if (!x) return;
+    $("viewer-img").src = x.thumb; $("viewer-note").textContent = "불러오는 중…"; $("viewer").hidden = false;
+    try {
+      const snap = await photoFullCol.doc(id).get();
+      if ($("viewer").hidden) return;
+      if (snap.exists && snap.data().data) { $("viewer-img").src = snap.data().data; $("viewer-note").textContent = ""; }
+      else $("viewer-note").textContent = "원본을 찾지 못해서 작은 사진으로 보여 드려요.";
+    } catch (e) { $("viewer-note").textContent = "원본을 불러오지 못했어요. 연결을 확인해 주세요."; }
+  }
+  function closePhoto() { $("viewer").hidden = true; $("viewer-img").removeAttribute("src"); }
+  $("viewer").addEventListener("click", closePhoto);
 
   // ---- focus timer
   let wake = null;
@@ -1614,6 +1733,7 @@ button.kvbtn:hover { background: #e9ecef; }
     const tg = t.closest("[data-todo-toggle]"); if (tg) return toggleTodo(tg.dataset.todoToggle);
     const sr = t.closest("[data-star]"); if (sr) return toggleStar(sr.dataset.star);
     const td = t.closest("[data-todo]"); if (td) { const o = S.todos.find(x => x.id === td.dataset.todo); if (o) openTask(o); return; }
+    const ph = t.closest("[data-photo]"); if (ph) { e.stopPropagation(); return openPhoto(ph.dataset.photo); }
     const hb = t.closest("[data-habit]"); if (hb) { const [id, ds] = hb.dataset.habit.split("|"); return toggleHabit(id, ds); }
     const en = t.closest("[data-energy]");
     if (en) { if (!canWrite) return; const v = Number(en.dataset.energy), cur = energyOf(dayDoc(todayStr())); try { await saveDay(todayStr(), { energy: cur === v ? 0 : v }); } catch (ex) { toast("저장하지 못했어요"); } return; }
@@ -2272,6 +2392,8 @@ action 형식:
   function showAuth() {
     stopListening(); currentUser = null; mode = "loading";
     for (const c of COLLS) S[c] = [];
+    S.photos = []; photoCol = null; photoFullCol = null;
+    if (!$("viewer").hidden) $("viewer").hidden = true;
     budget = 0; hours = { ...DEFAULT_HOURS }; ai = { key: "", model: "" }; aiModels = []; chat = []; undoMap = {};
     refreshAssistant();
     if (!$("chatview").hidden) { $("chatview").hidden = true; document.body.style.overflow = ""; }
@@ -2289,6 +2411,7 @@ action 형식:
     budgetDoc = root.collection("ledgerMeta").doc("budget");
     hoursDoc = root.collection("settings").doc("hours");
     aiDoc = root.collection("settings").doc("ai");
+    photoCol = root.collection("photos"); photoFullCol = root.collection("photoFull");
     setSync("불러오는 중…");
     let pendingRender = null;
     const soon = () => { if (pendingRender) return; pendingRender = setTimeout(() => { pendingRender = null; renderAll(); }, 30); };
@@ -2297,6 +2420,7 @@ action 형식:
       banner(e && e.code === "permission-denied" ? "데이터를 읽을 권한이 없어요. Firebase 보안 규칙을 설치 안내대로 넣었는지 확인해 주세요." : "서버 연결에 문제가 있어요. 잠시 후 다시 열어 주세요.");
     };
     for (const name of COLLS) unsubs.push(cols[name].onSnapshot(snap => { S[name] = snap.docs.map(d => ({ id: d.id, ...d.data() })); soon(); }, fail));
+    unsubs.push(photoCol.where("date", ">=", ymd(addDays(new Date(), -400))).onSnapshot(snap => { S.photos = snap.docs.map(d => ({ id: d.id, ...d.data() })); soon(); }, () => {}));
     unsubs.push(cols.events.onSnapshot({ includeMetadataChanges: true }, snap => {
       setSync(snap.metadata.fromCache ? "오프라인 · 연결되면 자동으로 맞춰져요" : snap.metadata.hasPendingWrites ? "저장하는 중…" : "저장됨 · 모든 기기에서 같은 내용이 보여요");
     }, () => {}));
