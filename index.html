@@ -284,6 +284,15 @@ button.kvbtn:hover { background: var(--kv-hover); }
   width: 100%; min-width: 0; border: 0; background: var(--gray-soft); border-radius: 12px; padding: 12px 14px; font-size: 15px;
 }
 .field textarea { resize: vertical; min-height: 64px; }
+.field input[type="date"], .field input[type="time"], input.input[type="time"] { -webkit-appearance: none; appearance: none; display: block; max-width: 100%; min-height: 46px; text-align: left; }
+input[type="date"]::-webkit-date-and-time-value, input[type="time"]::-webkit-date-and-time-value { text-align: left; margin: 0; }
+.duepick { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; min-width: 0; }
+.duepick .lbl { color: var(--fg3); margin-right: 2px; }
+.duepick button, .duepick .duedate { border: 0; background: var(--gray-soft); border-radius: 10px; padding: 7px 11px; font-size: 13px; color: var(--fg2); font-weight: 500; line-height: 1.4; }
+.duepick .duedate { position: relative; overflow: hidden; display: inline-flex; align-items: center; gap: 4px; cursor: pointer; }
+.duepick .duedate svg { width: 14px; height: 14px; }
+.duepick [aria-pressed="true"] { background: var(--blue-soft); color: var(--blue); font-weight: 700; }
+.addtodo .duepick .duedate input { position: absolute; inset: 0; width: 100%; height: 100%; min-width: 0; opacity: 0; padding: 0; margin: 0; border: 0; -webkit-appearance: none; appearance: none; cursor: pointer; }
 .field { display: grid; gap: 6px; min-width: 0; }
 .field > label, .lbl { font-size: 13px; font-weight: 600; color: var(--fg2); }
 .grid2 { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 10px; }
@@ -968,6 +977,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
   let timer = null, tickId = null, rateId = "";
 
   ICON.camera = svg('<path d="M4 8.5A1.5 1.5 0 0 1 5.5 7h2.2l1.5-2h5.6l1.5 2h2.2A1.5 1.5 0 0 1 20 8.5v9a1.5 1.5 0 0 1-1.5 1.5h-13A1.5 1.5 0 0 1 4 17.5Z"/><circle cx="12" cy="12.5" r="3.5"/>', 2);
+  ICON.cal = svg('<rect x="4" y="5.5" width="16" height="14" rx="2.5"/><path d="M4 10h16M8.5 3.5v4M15.5 3.5v4"/>', 2);
   ICON.star = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="m12 3.2 2.6 5.5 6 .8-4.4 4.1 1.1 6-5.3-2.9-5.3 2.9 1.1-6L3.4 9.5l6-.8Z"/></svg>';
   const MOOD_ICON = {
     sun: svg('<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>'),
@@ -1233,7 +1243,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
       <section class="card"><div class="h2row"><h2>할 일 <span class="pct">${open.length}개 남음</span></h2></div>
         <div>${rest.length ? rest.slice(0, 10).map(todoRow).join("") : `<div class="empty-line">${open.length ? "남은 할 일은 모두 중요한 일에 올라가 있어요." : "남은 할 일이 없어요."}</div>`}</div>
         ${rest.length > 10 ? `<div class="muted small">그 밖에 ${rest.length - 10}개 더 있어요</div>` : ""}
-        ${canWrite ? `<form class="addtodo" data-keep="todoadd" data-addtodo autocomplete="off"><input name="text" type="text" maxlength="200" placeholder="할 일 추가" aria-label="새 할 일"><input name="due" type="date" aria-label="마감일 (선택)" class="wide-on-phone"><button class="btn primary" type="submit">추가</button></form>` : ""}
+        ${canWrite ? `<form class="addtodo" data-keep="todoadd" data-addtodo autocomplete="off"><input name="text" type="text" maxlength="200" placeholder="할 일 추가" aria-label="새 할 일"><div class="duepick wide-on-phone" role="group" aria-label="마감일"><span class="lbl">마감</span><button type="button" data-due="">없음</button><button type="button" data-due="0">오늘</button><button type="button" data-due="1">내일</button><label class="duedate">${ICON.cal || ""}<span>날짜</span><input name="due" type="date" aria-label="마감일 고르기"></label></div><button class="btn primary" type="submit">추가</button></form>` : ""}
         ${done.length ? `<div class="h2row"><span class="muted small">끝낸 일 ${done.length}개</span><button class="link" type="button" data-act="toggle-done">${showDone ? "접기" : "펼치기"}</button></div>${showDone ? `<div>${done.slice(0, 20).map(todoRow).join("")}</div>` : ""}` : ""}
       </section>
       <section class="card"><div class="h2row"><h2>이번 달 생활비</h2>${moreLink('data-goto="money"', "가계부")}</div>
@@ -1508,8 +1518,25 @@ button.kvbtn:hover { background: var(--kv-hover); }
     }
     if (!$("chatview").hidden) renderChat();
     if (!$("sh-routines").hidden) renderRoutineSheet();
-    fitNumbers();
+    fitNumbers(); syncDue();
   }
+  // due-date chips on the quick add form: 없음 / 오늘 / 내일 / 날짜 (the date field sits invisibly over the last chip)
+  function syncDue() {
+    document.querySelectorAll(".duepick").forEach(g => {
+      const v = g.querySelector('input[name="due"]').value, diff = v ? dayDiff(v) : null;
+      g.querySelectorAll("[data-due]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.due === "" ? !v : diff === +b.dataset.due)));
+      const other = !!v && diff !== 0 && diff !== 1, d = other ? parse(v) : null;
+      g.querySelector(".duedate").setAttribute("aria-pressed", String(other));
+      g.querySelector(".duedate span").textContent = other ? `${d.getMonth() + 1}월 ${d.getDate()}일 (${DOW[d.getDay()]})` : "날짜";
+    });
+  }
+  document.addEventListener("click", e => {
+    const b = e.target.closest && e.target.closest(".duepick [data-due]"); if (!b) return;
+    const inp = b.closest(".duepick").querySelector('input[name="due"]');
+    inp.value = b.dataset.due === "" ? "" : ymd(addDays(new Date(), +b.dataset.due)); syncDue();
+  });
+  document.addEventListener("input", e => { if (e.target.closest && e.target.closest(".duepick")) syncDue(); });
+  document.addEventListener("change", e => { if (e.target.closest && e.target.closest(".duepick")) syncDue(); });
   try { document.fonts.ready.then(fitNumbers); } catch (e) {}
   function goto(tab) { if (!TABS.includes(tab)) return; prefs.tab = tab; savePrefs(); renderAll(); window.scrollTo({ top: 0 }); }
 
@@ -2227,7 +2254,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
       e.preventDefault();
       const text = f.elements.text.value.trim(), due = f.elements.due.value || "";
       if (!text) return f.elements.text.focus();
-      f.elements.text.value = ""; f.elements.due.value = "";
+      f.elements.text.value = ""; f.elements.due.value = ""; syncDue();
       try { await put("todos", { id: newId(), text, due, done: false, createdAt: new Date().toISOString() }); toast("할 일을 추가했어요"); }
       catch (ex) { toast(saveErr(ex)); }
     } else if (f.matches('[data-keep="focusform"]')) { e.preventDefault(); startFocus(); }
