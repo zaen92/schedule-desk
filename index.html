@@ -8,7 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="일정 데스크">
-<script>try { document.documentElement.dataset.mode = localStorage.getItem("schedule-desk.theme.v1") || "light"; } catch (e) { document.documentElement.dataset.mode = "light"; }</script>
+<script>try { document.documentElement.dataset.mode = localStorage.getItem("schedule-desk.theme.v1") || "light"; document.documentElement.dataset.palette = localStorage.getItem("schedule-desk.palette.v1") || "basic"; } catch (e) { document.documentElement.dataset.mode = "light"; document.documentElement.dataset.palette = "basic"; }</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -30,6 +30,7 @@
   --blue: #3182f6;
   --blue-dark: #1b64da;
   --blue-soft: #e8f3ff;
+  --on-blue: #ffffff;
   --red: #f04452;
   --red-soft: #ffeeef;
   --orange: #ff8a00;
@@ -52,7 +53,7 @@
 }
 :root[data-mode="dark"] {
     --bg: #111317; --card: #1b1e24; --fg: #eceef1; --fg2: #b4bcc6; --fg3: #858f9b; --line: #2b3038; --press: #23272e;
-    --blue: #4c94ff; --blue-dark: #8bbcff; --blue-soft: #1a2a45; --red: #ff6b72; --red-soft: #3b1f23;
+    --blue: #4c94ff; --blue-dark: #8bbcff; --blue-soft: #1a2a45; --on-blue: #ffffff; --red: #ff6b72; --red-soft: #3b1f23;
     --orange: #ffa23a; --orange-ink: #ffb766; --orange-soft: #3a2a16; --green: #2fcf86; --green-soft: #15322a;
     --purple: #9f8bff; --purple-soft: #29233f; --pink: #ff70a6; --pink-soft: #3b2130; --teal: #3cc6d6; --teal-soft: #143339;
     --gray-soft: #23272e; --fixed: #4b525d; --fixed-a: #2a2f37; --fixed-b: #252a31; --fixed-edge: #5b6470; --switch-off: #3a4049;
@@ -62,7 +63,7 @@
 @media (prefers-color-scheme: dark) {
   :root[data-mode="system"] {
     --bg: #111317; --card: #1b1e24; --fg: #eceef1; --fg2: #b4bcc6; --fg3: #858f9b; --line: #2b3038; --press: #23272e;
-    --blue: #4c94ff; --blue-dark: #8bbcff; --blue-soft: #1a2a45; --red: #ff6b72; --red-soft: #3b1f23;
+    --blue: #4c94ff; --blue-dark: #8bbcff; --blue-soft: #1a2a45; --on-blue: #ffffff; --red: #ff6b72; --red-soft: #3b1f23;
     --orange: #ffa23a; --orange-ink: #ffb766; --orange-soft: #3a2a16; --green: #2fcf86; --green-soft: #15322a;
     --purple: #9f8bff; --purple-soft: #29233f; --pink: #ff70a6; --pink-soft: #3b2130; --teal: #3cc6d6; --teal-soft: #143339;
     --gray-soft: #23272e; --fixed: #4b525d; --fixed-a: #2a2f37; --fixed-b: #252a31; --fixed-edge: #5b6470; --switch-off: #3a4049;
@@ -70,6 +71,26 @@
     color-scheme: dark;
   }
 }
+/* Color themes (this device only). Each sets every token in both modes so light and dark never mix. */
+:root[data-palette="gallery"] { --bg: #ebe6e1; --card: #fbf9f7; --fg: #221c19; --fg2: #574d47; --fg3: #93877f; --line: #ddd4cc; --press: #e6dfd8; --gray-soft: #efe9e4; --blue: #c34811; --blue-dark: #9c380c; --blue-soft: #f7e4d9; --on-blue: #ffffff; --orange: #c34811; --orange-ink: #9c380c; --orange-soft: #f7e4d9; --purple: #0b369a; --purple-soft: #e1e7f5; --teal: #0b369a; --teal-soft: #e1e7f5; --fixed: #cbc1b8; --fixed-a: #ebe5df; --fixed-b: #e3dcd5; --fixed-edge: #b1a59b; --switch-off: #d6cdc5; --sel-col: #f5f1ed; --kv-hover: #e8e1db; --star-off: #cbc1b8; --askfade: rgba(235, 230, 225, 0); }
+:root[data-palette="gallery"][data-mode="dark"] { --bg: #14100e; --card: #1f1a17; --fg: #efe9e4; --fg2: #c2b7ae; --fg3: #8f847b; --line: #342b26; --press: #2a2420; --gray-soft: #2a2420; --blue: #e2693a; --blue-dark: #f39a72; --blue-soft: #3b2117; --on-blue: #ffffff; --orange: #e2693a; --orange-ink: #f39a72; --orange-soft: #3b2117; --purple: #7a9bf0; --purple-soft: #1b2442; --teal: #7a9bf0; --teal-soft: #1b2442; --fixed: #564b43; --fixed-a: #2d2622; --fixed-b: #28221e; --fixed-edge: #695c52; --switch-off: #40372f; --sel-col: #1b1613; --kv-hover: #2d2622; --star-off: #564b43; --askfade: rgba(20, 16, 14, 0); color-scheme: dark; }
+:root[data-palette="citrus"] { --bg: #fbf5e2; --card: #ffffff; --fg: #1b2232; --fg2: #4a5366; --fg3: #878e9e; --line: #eee5c9; --press: #f5edd4; --gray-soft: #f7f0da; --blue: #2e5aa7; --blue-dark: #224584; --blue-soft: #e2effe; --on-blue: #ffffff; --orange: #f59a12; --orange-ink: #a35f00; --orange-soft: #fff0d4; --purple: #2e5aa7; --purple-soft: #e2effe; --teal: #3f93dd; --teal-soft: #e4f2ff; --fixed: #dacfae; --fixed-a: #f3ebd3; --fixed-b: #ece2c6; --fixed-edge: #c3b58f; --switch-off: #e3d9bd; --sel-col: #fdf9ec; --kv-hover: #f2ead1; --star-off: #dacfae; --askfade: rgba(251, 245, 226, 0); }
+:root[data-palette="citrus"][data-mode="dark"] { --bg: #0f141d; --card: #19202c; --fg: #eef2f7; --fg2: #b6c0cf; --fg3: #848e9f; --line: #2a3242; --press: #232b39; --gray-soft: #232b39; --blue: #86c5ff; --blue-dark: #b6dcff; --blue-soft: #1b2e4a; --on-blue: #0c2246; --orange: #ffa62b; --orange-ink: #ffc060; --orange-soft: #3a2b12; --purple: #86c5ff; --purple-soft: #1b2e4a; --teal: #86c5ff; --teal-soft: #16304a; --fixed: #4a5363; --fixed-a: #29313f; --fixed-b: #242c39; --fixed-edge: #5a6476; --switch-off: #394252; --sel-col: #161c27; --kv-hover: #29313f; --star-off: #4a5363; --askfade: rgba(15, 20, 29, 0); color-scheme: dark; }
+:root[data-palette="cafe"] { --bg: #f6f3ee; --card: #fffefc; --fg: #2a1c14; --fg2: #5c4a3e; --fg3: #998a7f; --line: #e8e1d7; --press: #efe9e0; --gray-soft: #f1ece5; --blue: #4b2e1f; --blue-dark: #2f1c12; --blue-soft: #f6ecc4; --on-blue: #ffffff; --orange: #c98a1b; --orange-ink: #8a5a06; --orange-soft: #f6ecc4; --purple: #7a5a48; --purple-soft: #efe6df; --teal: #4f8c96; --teal-soft: #dcecef; --fixed: #d4c9bd; --fixed-a: #eee8df; --fixed-b: #e7e0d5; --fixed-edge: #bcae9f; --switch-off: #ddd4c9; --sel-col: #faf7f3; --kv-hover: #ece5db; --star-off: #d4c9bd; --askfade: rgba(246, 243, 238, 0); }
+:root[data-palette="cafe"][data-mode="dark"] { --bg: #15100d; --card: #201914; --fg: #f4ede5; --fg2: #c8baad; --fg3: #94867b; --line: #362a22; --press: #2b221c; --gray-soft: #2b221c; --blue: #f4e6a6; --blue-dark: #fbf1c8; --blue-soft: #3a3218; --on-blue: #3a2417; --orange: #e8b44c; --orange-ink: #f4cf7e; --orange-soft: #3a2d14; --purple: #d4b8a6; --purple-soft: #33261f; --teal: #a3d2da; --teal-soft: #1c3135; --fixed: #574a40; --fixed-a: #2e2520; --fixed-b: #29211c; --fixed-edge: #6b5b4f; --switch-off: #42372f; --sel-col: #1b1511; --kv-hover: #2e2520; --star-off: #574a40; --askfade: rgba(21, 16, 13, 0); color-scheme: dark; }
+@media (prefers-color-scheme: dark) {
+  :root[data-palette="gallery"][data-mode="system"] { --bg: #14100e; --card: #1f1a17; --fg: #efe9e4; --fg2: #c2b7ae; --fg3: #8f847b; --line: #342b26; --press: #2a2420; --gray-soft: #2a2420; --blue: #e2693a; --blue-dark: #f39a72; --blue-soft: #3b2117; --on-blue: #ffffff; --orange: #e2693a; --orange-ink: #f39a72; --orange-soft: #3b2117; --purple: #7a9bf0; --purple-soft: #1b2442; --teal: #7a9bf0; --teal-soft: #1b2442; --fixed: #564b43; --fixed-a: #2d2622; --fixed-b: #28221e; --fixed-edge: #695c52; --switch-off: #40372f; --sel-col: #1b1613; --kv-hover: #2d2622; --star-off: #564b43; --askfade: rgba(20, 16, 14, 0); color-scheme: dark; }
+  :root[data-palette="citrus"][data-mode="system"] { --bg: #0f141d; --card: #19202c; --fg: #eef2f7; --fg2: #b6c0cf; --fg3: #848e9f; --line: #2a3242; --press: #232b39; --gray-soft: #232b39; --blue: #86c5ff; --blue-dark: #b6dcff; --blue-soft: #1b2e4a; --on-blue: #0c2246; --orange: #ffa62b; --orange-ink: #ffc060; --orange-soft: #3a2b12; --purple: #86c5ff; --purple-soft: #1b2e4a; --teal: #86c5ff; --teal-soft: #16304a; --fixed: #4a5363; --fixed-a: #29313f; --fixed-b: #242c39; --fixed-edge: #5a6476; --switch-off: #394252; --sel-col: #161c27; --kv-hover: #29313f; --star-off: #4a5363; --askfade: rgba(15, 20, 29, 0); color-scheme: dark; }
+  :root[data-palette="cafe"][data-mode="system"] { --bg: #15100d; --card: #201914; --fg: #f4ede5; --fg2: #c8baad; --fg3: #94867b; --line: #362a22; --press: #2b221c; --gray-soft: #2b221c; --blue: #f4e6a6; --blue-dark: #fbf1c8; --blue-soft: #3a3218; --on-blue: #3a2417; --orange: #e8b44c; --orange-ink: #f4cf7e; --orange-soft: #3a2d14; --purple: #d4b8a6; --purple-soft: #33261f; --teal: #a3d2da; --teal-soft: #1c3135; --fixed: #574a40; --fixed-a: #2e2520; --fixed-b: #29211c; --fixed-edge: #6b5b4f; --switch-off: #42372f; --sel-col: #1b1511; --kv-hover: #2e2520; --star-off: #574a40; --askfade: rgba(21, 16, 13, 0); color-scheme: dark; }
+}
+.seg4 { display: grid; gap: 4px; background: var(--gray-soft); border-radius: 12px; padding: 4px; }
+.seg4 button { border: 0; background: transparent; border-radius: 9px; padding: 9px 4px; font-size: 14px; font-weight: 600; color: var(--fg3); }
+.seg4 button[aria-pressed="true"] { background: var(--card); color: var(--fg); box-shadow: 0 1px 3px rgba(0, 0, 0, .08); }
+.palettes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; }
+.palettes button { border: 0; background: var(--gray-soft); border-radius: 14px; padding: 10px; display: grid; gap: 8px; text-align: left; color: var(--fg); font-weight: 600; font-size: 14px; }
+.palettes button[aria-pressed="true"] { box-shadow: inset 0 0 0 2px var(--blue); background: var(--card); }
+.palettes .sw { display: flex; height: 26px; border-radius: 8px; overflow: hidden; box-shadow: inset 0 0 0 1px rgba(0, 0, 0, .06); }
+.palettes .sw i { flex: 1; }
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
 :root { padding-top: env(safe-area-inset-top, 0px); }
@@ -124,7 +145,7 @@ button { cursor: pointer; }
 /* Buttons */
 .btn { border: 0; border-radius: 12px; padding: 10px 14px; font-weight: 600; font-size: 14px; background: var(--gray-soft); color: var(--fg2); display: inline-flex; align-items: center; justify-content: center; gap: 6px; }
 .btn:active { transform: scale(.98); }
-.btn.primary { background: var(--blue); color: #fff; }
+.btn.primary { background: var(--blue); color: var(--on-blue); }
 .btn.primary:hover { background: var(--blue-dark); }
 .btn.soft { background: var(--blue-soft); color: var(--blue); }
 .btn.danger { background: var(--red-soft); color: var(--red); }
@@ -224,7 +245,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
 .wd b { font-size: 17px; width: 36px; height: 36px; display: grid; place-items: center; border-radius: 50%; font-variant-numeric: tabular-nums; }
 .wd.sun span { color: var(--red); }
 .wd.today b { color: var(--blue); }
-.wd.sel b { background: var(--blue); color: #fff; }
+.wd.sel b { background: var(--blue); color: var(--on-blue); }
 .wd i { width: 5px; height: 5px; border-radius: 50%; background: var(--fg3); opacity: 0; }
 .wd.has i { opacity: 1; }
 .wd.sel i { background: var(--blue); }
@@ -234,7 +255,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
 .chk { width: 26px; height: 26px; border-radius: 50%; border: 2px solid var(--line); background: var(--card); display: grid; place-items: center; padding: 0; color: transparent; }
 .chk svg { width: 14px; height: 14px; }
 .chk:hover { border-color: var(--blue); }
-.chk[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: #fff; }
+.chk[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: var(--on-blue); }
 .ttext { border: 0; background: transparent; text-align: left; padding: 2px 0; display: grid; min-width: 0; }
 .ttext b { font-weight: 500; font-size: 15px; overflow-wrap: anywhere; }
 .todo.done .ttext b { color: var(--fg3); text-decoration: line-through; }
@@ -336,7 +357,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
 }
 .askbar { max-width: 600px; margin: 0 auto; width: 100%; display: flex; align-items: center; gap: 10px; border: 0; background: var(--card); border-radius: 18px; padding: 8px 8px 8px 18px; box-shadow: 0 4px 18px rgba(0, 20, 60, .1); text-align: left; }
 .askbar span { flex: 1; min-width: 0; color: var(--fg3); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.askbar i { width: 38px; height: 38px; border-radius: 13px; background: var(--blue); color: #fff; display: grid; place-items: center; flex: none; }
+.askbar i { width: 38px; height: 38px; border-radius: 13px; background: var(--blue); color: var(--on-blue); display: grid; place-items: center; flex: none; }
 .askbar i svg { width: 20px; height: 20px; }
 .chatview { position: fixed; inset: 0; z-index: 50; background: var(--bg); display: flex; flex-direction: column; padding-top: env(safe-area-inset-top, 0px); }
 .chathead { display: flex; align-items: center; gap: 6px; padding: 10px max(10px, env(safe-area-inset-right, 0px)) 8px max(10px, env(safe-area-inset-left, 0px)); max-width: 640px; width: 100%; margin: 0 auto; }
@@ -344,7 +365,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
 .chatscroll { flex: 1; overflow-y: auto; padding: 8px max(16px, env(safe-area-inset-right, 0px)) 16px max(16px, env(safe-area-inset-left, 0px)); }
 .chat { max-width: 600px; margin: 0 auto; display: grid; gap: 10px; }
 .msg { max-width: 86%; padding: 11px 15px; border-radius: 20px; font-size: 15px; line-height: 1.55; white-space: pre-wrap; overflow-wrap: anywhere; }
-.msg.user { justify-self: end; background: var(--blue); color: #fff; border-bottom-right-radius: 6px; }
+.msg.user { justify-self: end; background: var(--blue); color: var(--on-blue); border-bottom-right-radius: 6px; }
 .msg.bot { justify-self: start; background: var(--card); border-bottom-left-radius: 6px; display: grid; gap: 10px; white-space: normal; }
 .msg.bot .txt { white-space: pre-wrap; }
 .msg.bot.err .txt { color: var(--red); }
@@ -358,7 +379,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
 .rlinks a { display: inline-block; background: var(--card); color: var(--blue); font-weight: 600; font-size: 13px; text-decoration: none; padding: 6px 12px; border-radius: 10px; box-shadow: inset 0 0 0 1px var(--line); }
 .rlinks a:hover { background: var(--blue-soft); }
 .receipt > span { min-width: 0; flex: 1; }
-.copybtn { border: 0; background: var(--blue); color: #fff; font-weight: 600; font-size: 13px; padding: 7px 14px; border-radius: 10px; }
+.copybtn { border: 0; background: var(--blue); color: var(--on-blue); font-weight: 600; font-size: 13px; padding: 7px 14px; border-radius: 10px; }
 .copybtn.ghost { background: var(--card); color: var(--blue); box-shadow: inset 0 0 0 1px var(--line); }
 .bsteps { display: grid; gap: 2px; font-size: 13px; color: var(--fg3); }
 .bsteps span:last-child { color: var(--fg2); }
@@ -371,7 +392,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
 .composer { padding: 8px max(16px, env(safe-area-inset-right, 0px)) calc(10px + env(safe-area-inset-bottom, 0px)) max(16px, env(safe-area-inset-left, 0px)); }
 .composer form { max-width: 600px; margin: 0 auto; display: flex; gap: 8px; align-items: center; background: var(--card); border-radius: 18px; padding: 6px 6px 6px 16px; box-shadow: 0 4px 18px rgba(0, 20, 60, .08); }
 .composer input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: 16px; padding: 8px 0; }
-.composer button { width: 40px; height: 40px; border-radius: 14px; border: 0; background: var(--blue); color: #fff; display: grid; place-items: center; flex: none; }
+.composer button { width: 40px; height: 40px; border-radius: 14px; border: 0; background: var(--blue); color: var(--on-blue); display: grid; place-items: center; flex: none; }
 .composer button svg { width: 20px; height: 20px; }
 .composer .off { max-width: 600px; margin: 0 auto; font-size: 13px; color: var(--fg3); text-align: center; background: var(--card); border-radius: 14px; padding: 10px 14px; }
 
@@ -540,7 +561,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
 .daypick label { cursor: pointer; }
 .daypick input { position: absolute; opacity: 0; pointer-events: none; }
 .daypick span { display: grid; place-items: center; height: 34px; border-radius: 9px; background: var(--gray-soft); font-size: 13px; font-weight: 600; color: var(--fg2); font-variant-numeric: tabular-nums; }
-.daypick input:checked + span { background: var(--blue); color: #fff; }
+.daypick input:checked + span { background: var(--blue); color: var(--on-blue); }
 .daypick input:focus-visible + span { outline: 2px solid var(--blue); }
 .startrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .startrow .btn { display: grid; justify-items: center; gap: 6px; padding: 16px 8px; }
@@ -581,7 +602,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
   <div>
     <button type="button" data-tab="today"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11 12 4l8 7v8.5a1.5 1.5 0 0 1-1.5 1.5H15v-6H9v6H5.5A1.5 1.5 0 0 1 4 19.5Z"/></svg>홈</button>
     <button type="button" data-tab="week"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3.5" y="5" width="17" height="15" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/></svg>계획</button>
-    <button type="button" data-tab="focus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>집중</button>
+    <button type="button" data-tab="focus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r="1" fill="currentColor"/></svg>몰입</button>
     <button type="button" data-tab="review"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 5.5A1.5 1.5 0 0 1 6.5 4H19v14H6.5A1.5 1.5 0 0 0 5 19.5Z"/><path d="M5 19.5A1.5 1.5 0 0 0 6.5 21H19v-3M9 8.5h6"/></svg>일기</button>
     <button type="button" data-tab="money"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="6" width="18" height="13" rx="3"/><path d="M3 10h18M16 15h2"/></svg>가계부</button>
   </div>
@@ -763,12 +784,12 @@ button.kvbtn:hover { background: var(--kv-hover); }
     </form>
     <form class="setsec" id="f-hours" novalidate>
       <h3>나의 하루</h3>
-      <p class="muted small">깨어 있는 시간과 주간 집중 목표예요. 계획 탭의 시간 계산과 집중 탭의 목표 막대에 쓰여요.</p>
+      <p class="muted small">깨어 있는 시간과 주간 몰입 목표예요. 계획 탭의 시간 계산과 몰입 탭의 목표 막대에 쓰여요.</p>
       <div class="grid2">
         <div class="field"><label for="hr-start">일어나는 시간</label><input id="hr-start" type="time" class="input" step="1800"></div>
         <div class="field"><label for="hr-end">잠드는 시간</label><input id="hr-end" type="time" class="input" step="1800"></div>
       </div>
-      <div class="field"><label for="hr-goal">주간 집중 목표</label><div class="unitbox"><input id="hr-goal" type="text" inputmode="numeric" class="input" maxlength="2"><span>시간</span></div></div>
+      <div class="field"><label for="hr-goal">주간 몰입 목표</label><div class="unitbox"><input id="hr-goal" type="text" inputmode="numeric" class="input" maxlength="2"><span>시간</span></div></div>
       <div class="note" id="hr-msg" hidden></div>
       <button class="btn" type="submit">저장</button>
     </form>
@@ -777,11 +798,13 @@ button.kvbtn:hover { background: var(--kv-hover); }
       <div class="seg4" role="group" aria-label="화면 밝기" style="grid-template-columns:repeat(3,1fr)" id="st-theme">
         <button type="button" data-theme-set="light">밝게</button><button type="button" data-theme-set="dark">어둡게</button><button type="button" data-theme-set="system">기기 따라</button>
       </div>
-      <p class="muted small">이 기기에만 적용돼요.</p>
+      <h3 style="margin-top:14px">색 테마</h3>
+      <div class="palettes" role="group" aria-label="색 테마" id="st-palette"><button type="button" data-palette-set="basic"><span class="sw"><i style="background:#3182f6"></i><i style="background:#e8f3ff"></i><i style="background:#f2f4f6"></i><i style="background:#191f28"></i></span>기본</button><button type="button" data-palette-set="gallery"><span class="sw"><i style="background:#c34811"></i><i style="background:#0b369a"></i><i style="background:#d9d1ca"></i></span>갤러리</button><button type="button" data-palette-set="citrus"><span class="sw"><i style="background:#ffa62b"></i><i style="background:#86c5ff"></i><i style="background:#2e5aa7"></i><i style="background:#f8e6a0"></i></span>시트러스</button><button type="button" data-palette-set="cafe"><span class="sw"><i style="background:#f6f3ee"></i><i style="background:#4b2e1f"></i><i style="background:#f4e6a6"></i><i style="background:#dcecef"></i></span>카페</button></div>
+      <p class="muted small">밝기와 색 테마는 이 기기에만 적용돼요.</p>
     </div>
     <div class="setsec">
       <h3>데이터 백업</h3>
-      <p class="muted small">일정·습관·할 일·일기·집중 기록·가계부를 파일 하나로 내려받거나, 백업 파일에서 다시 가져와요. 가져오면 같은 항목은 덮어쓰고 나머지는 그대로 둬요.</p>
+      <p class="muted small">일정·습관·할 일·일기·몰입 기록·가계부를 파일 하나로 내려받거나, 백업 파일에서 다시 가져와요. 가져오면 같은 항목은 덮어쓰고 나머지는 그대로 둬요.</p>
       <div class="btnrow"><button class="btn" type="button" id="bk-export">백업 파일 내려받기</button><label class="btn" for="bk-file">백업 파일 가져오기</label></div>
       <input id="bk-file" type="file" accept=".json,application/json" hidden>
       <div class="note" id="bk-msg" hidden></div>
@@ -924,7 +947,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
   // ================================================================ state
   const S = { events: [], ledger: [], todos: [], routines: [], days: [], focus: [], briefings: [], photos: [], recurring: [], weeks: [] };
   let jcursor = firstOfMonth(new Date()), wkCursor = null;
-  const LS_THEME = "schedule-desk.theme.v1";
+  const LS_THEME = "schedule-desk.theme.v1", LS_PALETTE = "schedule-desk.palette.v1";
   let photoCol = null, photoFullCol = null;
   let budget = 0, hours = { ...DEFAULT_HOURS };
   let mode = "loading";        // loading | db | local
@@ -1120,7 +1143,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
       if (dd >= 0 && dd <= 3) out.push({ tone: "orange", icon: ICON.won, b: `${dayName(np)} ${rc.name} ${won(rc.amount)}원 결제 예정`, s: "고정 지출", go: "money" });
     }
     { const dw = new Date().getDay(), h = new Date().getHours();
-      if ((dw === 0 && h >= 17) || dw === 1) out.push({ tone: "purple", icon: ICON.pen, b: dw === 0 ? "이번 주 돌아보기가 준비됐어요" : "지난주 돌아보기를 볼 수 있어요", s: "집중, 습관, 지출, 일기를 한눈에", act: "weekly", date: dw === 0 ? today : ymd(addDays(new Date(), -7)) }); }
+      if ((dw === 0 && h >= 17) || dw === 1) out.push({ tone: "purple", icon: ICON.pen, b: dw === 0 ? "이번 주 돌아보기가 준비됐어요" : "지난주 돌아보기를 볼 수 있어요", s: "몰입, 습관, 지출, 일기를 한눈에", act: "weekly", date: dw === 0 ? today : ymd(addDays(new Date(), -7)) }); }
     if (new Date().getHours() >= 20 && !hasEntry(dayDoc(today))) out.push({ tone: "teal", icon: ICON.pen, b: "오늘 일기를 아직 안 남겼어요", s: "마음 날씨와 한 줄이면 충분해요", go: "review" });
     return out;
   }
@@ -1182,7 +1205,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
       <section class="hello"><p class="date">${longDate(today)}</p><h2>${greeting()}</h2></section>
       <section class="card">
         <div class="stats3">
-          <button type="button" data-goto="focus"><span>오늘 집중한 시간</span><b>${hm(focusMin(f => f.date === today))}</b></button>
+          <button type="button" data-goto="focus"><span>오늘 몰입 시간</span><b>${hm(focusMin(f => f.date === today))}</b></button>
           <button type="button" data-goto="today" data-scroll="habits"><span>오늘 지킨 습관</span><b>${rdN} / ${rts.length}</b></button>
           <button type="button" data-goto="review"><span>연속 기록</span><b>${streak ? `${streak}일째` : "오늘부터"}</b></button>
         </div>
@@ -1300,12 +1323,12 @@ button.kvbtn:hover { background: var(--kv-hover); }
     if (timer) {
       const rem = timerRemain();
       $("tab-focus").innerHTML = `
-        ${appbar("집중")}
+        ${appbar("몰입")}
         <section class="card" style="gap:18px;padding-block:28px">
-          <div class="muted small" style="text-align:center">${timer.paused ? "잠시 멈춤" : `${Math.round(timer.total / 60)}분 집중 중`}</div>
+          <div class="muted small" style="text-align:center">${timer.paused ? "잠시 멈춤" : `${Math.round(timer.total / 60)}분 몰입 중`}</div>
           <div class="digits" id="tm-text">${fmtClock(rem)}</div>
           <div class="meter thick"><i id="tm-bar" style="width:${(1 - rem / timer.total) * 100}%"></i></div>
-          <b style="font-size:17px;text-align:center">${esc(timer.text || "자유 집중")}</b>
+          <b style="font-size:17px;text-align:center">${esc(timer.text || "주제 없이 몰입")}</b>
           <div class="btnrow"><button class="btn big" type="button" data-act="focus-pause">${timer.paused ? "다시 시작" : "일시정지"}</button><button class="btn big primary" type="button" data-act="focus-finish">여기까지 기록하기</button></div>
           <button class="link" type="button" data-act="focus-cancel" style="justify-self:center">기록하지 않고 그만두기</button>
         </section>
@@ -1319,22 +1342,22 @@ button.kvbtn:hover { background: var(--kv-hover); }
     const recent = [...S.focus].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")).slice(0, 6);
     const toRate = rateId && S.focus.find(f => f.id === rateId && !f.rating);
     $("tab-focus").innerHTML = `
-      ${appbar("집중")}
-      ${toRate ? `<section class="card"><h2>방금 ${toRate.minutes}분 집중, 어땠나요?</h2><div class="rate3">${[1, 2, 3].map(v => `<button type="button" data-rate="${v}">${RATE[v]}</button>`).join("")}</div><button class="link" type="button" data-act="rate-skip" style="justify-self:center">넘어가기</button></section>` : ""}
-      <section class="card"><h2>집중 시작하기</h2>
+      ${appbar("몰입")}
+      ${toRate ? `<section class="card"><h2>방금 ${toRate.minutes}분 몰입, 어땠나요?</h2><div class="rate3">${[1, 2, 3].map(v => `<button type="button" data-rate="${v}">${RATE[v]}</button>`).join("")}</div><button class="link" type="button" data-act="rate-skip" style="justify-self:center">넘어가기</button></section>` : ""}
+      <section class="card"><h2>몰입 시작하기</h2>
         <form class="field" data-keep="focusform" autocomplete="off"><input class="input" name="ftext" type="text" maxlength="120" value="${esc(focusSel.text)}" placeholder="무엇을 할지 적어 주세요 (비워 둬도 돼요)" aria-label="이번에 끝낼 일"></form>
         ${open.length ? `<div class="tchips">${open.map(t => `<button type="button" data-ftodo="${esc(t.id)}" aria-pressed="${focusSel.todoId === t.id}">${t.star ? "★ " : ""}${esc(t.text)}</button>`).join("")}</div>` : ""}
         <div class="stepper"><button type="button" data-step="-5" aria-label="5분 줄이기">−</button><b>${mins}분</b><button type="button" data-step="5" aria-label="5분 늘리기">+</button></div>
         <div class="presets">${[15, 30, 45, 60].map(v => `<button type="button" data-dur="${v}" aria-pressed="${mins === v}">${v}분</button>`).join("")}</div>
         <button class="btn big primary" type="button" data-act="focus-start">${mins}분 시작하기</button>
       </section>
-      <section class="card"><div class="h2row"><h2>이번 주 집중한 시간</h2><span class="muted small">목표 ${hours.focusGoal || 10}시간</span></div>
+      <section class="card"><div class="h2row"><h2>이번 주 몰입한 시간</h2><span class="muted small">목표 ${hours.focusGoal || 10}시간</span></div>
         <div class="bigmoney" style="font-size:24px">${hm(weekM)}</div>
         <div class="meter ${weekM >= goalM ? "good" : ""}"><i style="width:${Math.min(100, weekM / goalM * 100)}%"></i></div>
         <div class="daybars">${days.map((d, i) => `<div class="${ymd(d) === today ? "today" : ""}"><i class="${perDay[i] ? "" : "zero"}" style="height:${perDay[i] / maxM * 100}%" title="${perDay[i]}분"></i><span>${DOW[d.getDay()]}</span></div>`).join("")}</div>
       </section>
-      <section class="card"><h2>최근 집중 기록</h2>
-        <div>${recent.length ? recent.map(f => `<div class="row" data-tone="blue"><span class="ico">${ICON.timer}</span><span><span class="t">${esc(f.text || "자유 집중")}</span><span class="s">${dayName(f.date)}${f.rating ? " · " + RATE[f.rating] : ""}</span></span><span class="r">${f.minutes}분</span></div>`).join("") : `<div class="empty-line">아직 기록이 없어요. 15분부터 가볍게 시작해 보세요.</div>`}</div>
+      <section class="card"><h2>최근 몰입 기록</h2>
+        <div>${recent.length ? recent.map(f => `<div class="row" data-tone="blue"><span class="ico">${ICON.timer}</span><span><span class="t">${esc(f.text || "주제 없이 몰입")}</span><span class="s">${dayName(f.date)}${f.rating ? " · " + RATE[f.rating] : ""}</span></span><span class="r">${f.minutes}분</span></div>`).join("") : `<div class="empty-line">아직 기록이 없어요. 15분부터 가볍게 시작해 보세요.</div>`}</div>
       </section>`;
   }
 
@@ -1788,7 +1811,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
     document.querySelector('#wk-sheet [data-wk="1"]').disabled = diff >= 0;
     const expDiff = rp.prevExp ? rp.expT - rp.prevExp : 0;
     $("wk-body").innerHTML = `
-      <div class="wsec"><h3>집중 <span>목표 ${hours.focusGoal || 10}시간</span></h3>
+      <div class="wsec"><h3>몰입 <span>목표 ${hours.focusGoal || 10}시간</span></h3>
         <div class="wkbig">${hm(rp.focusT)}</div>
         <div class="meter ${rp.focusT >= goal ? "good" : ""}" style="background:var(--card)"><i style="width:${Math.min(100, rp.focusT / goal * 100)}%"></i></div>
         <div class="daybars" style="height:80px">${days.map((d, i) => `<div class="${ymd(d) === today ? "today" : ""}"><i class="${rp.focus[i] ? "" : "zero"}" style="height:${rp.focus[i] / maxF * 100}%"></i><span>${DOW[d.getDay()]}</span></div>`).join("")}</div>
@@ -1829,9 +1852,23 @@ button.kvbtn:hover { background: var(--kv-hover); }
     document.documentElement.dataset.mode = v;
     try { localStorage.setItem(LS_THEME, v); } catch (e) {}
     const dark = v === "dark" || (v === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
-    const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = dark ? "#111317" : "#f2f4f6";
+    syncThemeColor();
     document.querySelectorAll("[data-theme-set]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeSet === v)));
   }
+  function syncThemeColor() {
+    const meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.content = getComputedStyle(document.documentElement).getPropertyValue("--bg").trim() || "#f2f4f6";
+  }
+  const PALETTES = ["basic", "gallery", "citrus", "cafe"];
+  function applyPalette(n) {
+    const v = PALETTES.includes(n) ? n : "basic";
+    document.documentElement.dataset.palette = v;
+    try { localStorage.setItem(LS_PALETTE, v); } catch (e) {}
+    syncThemeColor();
+    document.querySelectorAll("[data-palette-set]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.paletteSet === v)));
+  }
+  $("st-palette").addEventListener("click", e => { const b = e.target.closest("[data-palette-set]"); if (b) applyPalette(b.dataset.paletteSet); });
+  applyPalette(document.documentElement.dataset.palette);
   $("st-theme").addEventListener("click", e => { const b = e.target.closest("[data-theme-set]"); if (b) applyTheme(b.dataset.themeSet); });
   applyTheme(document.documentElement.dataset.mode);
   try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => applyTheme(document.documentElement.dataset.mode)); } catch (e) {}
@@ -2070,7 +2107,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
       const rec = { id: newId(), date: todayStr(), minutes: mins, todoId: t.target, text: t.text, full: !!full, startedAt: t.startedAt, createdAt: new Date().toISOString() };
       try { await put("focus", rec); rateId = rec.id; } catch (e) {}
       try { if (full && navigator.userActivation && navigator.userActivation.hasBeenActive && navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
-      toast(full ? `${mins}분 집중 완료!` : `${mins}분을 기록했어요`);
+      toast(full ? `${mins}분 몰입 완료!` : `${mins}분을 기록했어요`);
     } else toast("1분이 안 돼서 기록하지 않았어요");
     renderAll();
   }
@@ -2243,12 +2280,12 @@ button.kvbtn:hover { background: var(--kv-hover); }
     const rts = routineList().map(r => `id=${r.id} | ${r.text} | 오늘 ${rd.includes(r.id) ? "체크함" : "아직"} | ${streakFrom(ds => habitOn(r.id, ds))}일 연속`);
     const ws = weekStart(n), st = weekStats(weekDays(n));
     const reviews = S.days.filter(hasEntry).sort((a, b) => b.id.localeCompare(a.id)).slice(0, 7).map(x => `${x.id} | 날씨: ${MOOD[x.mood] ? MOOD[x.mood].name : "-"} | 한 줄: ${entryLine(x) || "-"} | 내일 먼저: ${entryNext(x) || "-"}`);
-    const focus = [...S.focus].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")).slice(0, 10).map(f => `${f.date} | ${f.minutes}분 | ${f.text || "자유 집중"}${f.rating ? " | " + RATE[f.rating] : ""}`);
+    const focus = [...S.focus].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")).slice(0, 10).map(f => `${f.date} | ${f.minutes}분 | ${f.text || "주제 없이 몰입"}${f.rating ? " | " + RATE[f.rating] : ""}`);
     const mt = inMonth(S.ledger, n), pm = inMonth(S.ledger, new Date(n.getFullYear(), n.getMonth() - 1, 1));
     const catSum = list => { const o = {}; for (const t of list) if (t.type === "expense") o[t.cat] = (o[t.cat] || 0) + Number(t.amount || 0); return Object.entries(o).sort((a, b) => b[1] - a[1]).map(([c, v]) => `${(CAT[c] || CAT.etc).name} ${v}원`).join(", ") || "없음"; };
     const recent = [...S.ledger].sort((a, b) => (b.date || "").localeCompare(a.date || "")).slice(0, 30).map(t => `id=${t.id} | ${t.date} | ${t.type === "income" ? "수입" : "지출"} ${t.amount}원 | ${(CAT[t.cat] || CAT.etc).name} | ${t.memo || ""}`);
     return `[지금] ${today} (${DOW[n.getDay()]}) ${pad(n.getHours())}:${pad(n.getMinutes())}
-깨어 있는 시간: ${hours.start} ~ ${hours.end} / 주간 집중 목표 ${hours.focusGoal}시간
+깨어 있는 시간: ${hours.start} ~ ${hours.end} / 주간 몰입 목표 ${hours.focusGoal}시간
 
 [날짜표]
 ${dateTable()}
@@ -2256,7 +2293,7 @@ ${dateTable()}
 [오늘 상태]
 에너지: ${energyOf(d) ? energyOf(d) + "/5" : "미입력"} / 기록 연속 ${streakFrom(activeDay)}일
 중요한 일(별표): ${S.todos.filter(t => t.star && !t.done).map(t => t.text).join(", ") || "없음"}
-오늘 집중 ${focusMin(f => f.date === today)}분, 이번 주 집중 ${focusMin(f => f.date >= ymd(ws))}분
+오늘 몰입 ${focusMin(f => f.date === today)}분, 이번 주 몰입 ${focusMin(f => f.date >= ymd(ws))}분
 이번 주(월~일): 깨어 있는 시간 ${hm(st.awake)} 중 반복 일정 ${hm(st.fixed)}, 계획 ${hm(st.planned)}, 빈 시간 ${hm(st.free)}
 
 [다가오는 일정 (반복 펼침, 반복 = 매주 되풀이되는 일정, 한번 = 한 번짜리 일정)]
@@ -2271,7 +2308,7 @@ ${rts.join("\n") || "없음"}
 [할 일]
 ${todos.join("\n") || "없음"}
 
-[최근 집중 세션]
+[최근 몰입 세션]
 ${focus.join("\n") || "없음"}
 
 [최근 일기]
@@ -2288,11 +2325,11 @@ ${S.recurring.map(x => `id=${x.id} | ${x.name} | 매달 ${x.day}일 | ${x.amount
 ${recent.join("\n") || "없음"}`;
   }
   const RULES = `너는 사용자의 개인 비서야. 한국어 존댓말(해요체)로 짧고 다정하게 답해.
-사용자의 일정(반복 일정과 한 번짜리 일정), 습관, 할 일, 집중 세션, 일기, 가계부 데이터가 아래에 있어. 이 데이터만 근거로 답하고 없는 사실은 지어내지 마.
+사용자의 일정(반복 일정과 한 번짜리 일정), 습관, 할 일, 몰입 세션(사용자가 "집중"이라고 말해도 같은 뜻), 일기, 가계부 데이터가 아래에 있어. 이 데이터만 근거로 답하고 없는 사실은 지어내지 마.
 
 할 수 있는 일:
 - 기록·변경·삭제·완료 요청 → actions에 넣는다.
-- 질문(오늘 일정, 빈 시간, 이번 주 여유, 집중 시간, 지출 분석 등)과 계획 조언 → actions는 빈 배열, reply로 답한다.
+- 질문(오늘 일정, 빈 시간, 이번 주 여유, 몰입 시간, 지출 분석 등)과 계획 조언 → actions는 빈 배열, reply로 답한다.
 
 규칙:
 - 날짜는 반드시 [날짜표]에서 골라 YYYY-MM-DD. "다음주 화요일"은 (다음주) 표시된 화요일. 시간은 24시간 HH:MM.
@@ -2760,7 +2797,7 @@ action 형식:
     e.preventDefault();
     const s = $("hr-start").value, en = $("hr-end").value, goal = intOf($("hr-goal").value);
     if (!TIME_RE.test(s) || !TIME_RE.test(en) || toMin(en) - toMin(s) < 120) { note("hr-msg", "잠드는 시간이 일어나는 시간보다 2시간 이상 늦어야 해요.", "err"); return; }
-    if (!goal || goal > 80) { note("hr-msg", "주간 집중 목표는 1~80시간 사이로 정해 주세요.", "err"); return; }
+    if (!goal || goal > 80) { note("hr-msg", "주간 몰입 목표는 1~80시간 사이로 정해 주세요.", "err"); return; }
     const h = { start: s, end: en, focusGoal: goal };
     try { await saveHours(h); hours = h; note("hr-msg", "저장했어요.", "ok"); renderAll(); }
     catch (ex) { note("hr-msg", saveErr(ex), "err"); }
