@@ -8,6 +8,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="일정 데스크">
+<script>try { document.documentElement.dataset.mode = localStorage.getItem("schedule-desk.theme.v1") || "light"; } catch (e) { document.documentElement.dataset.mode = "light"; }</script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -43,13 +44,39 @@
   --teal: #0aa2b5;
   --teal-soft: #e2f6f9;
   --gray-soft: #f2f4f6;
+  --fixed: #c5ccd4; --fixed-a: #eceff2; --fixed-b: #e4e8ec; --fixed-edge: #aab3bd; --switch-off: #d1d6db;
+  --sel-col: #f7f8fa; --kv-hover: #e9ecef; --star-off: #c5ccd4; --askfade: rgba(242, 244, 246, 0);
   --font: "Pretendard", -apple-system, BlinkMacSystemFont, "Apple SD Gothic Neo", "Noto Sans KR", "Malgun Gothic", sans-serif;
   --nav-h: 62px;
   color-scheme: light;
 }
+:root[data-mode="dark"] {
+    --bg: #111317; --card: #1b1e24; --fg: #eceef1; --fg2: #b4bcc6; --fg3: #858f9b; --line: #2b3038; --press: #23272e;
+    --blue: #4c94ff; --blue-dark: #8bbcff; --blue-soft: #1a2a45; --red: #ff6b72; --red-soft: #3b1f23;
+    --orange: #ffa23a; --orange-ink: #ffb766; --orange-soft: #3a2a16; --green: #2fcf86; --green-soft: #15322a;
+    --purple: #9f8bff; --purple-soft: #29233f; --pink: #ff70a6; --pink-soft: #3b2130; --teal: #3cc6d6; --teal-soft: #143339;
+    --gray-soft: #23272e; --fixed: #4b525d; --fixed-a: #2a2f37; --fixed-b: #252a31; --fixed-edge: #5b6470; --switch-off: #3a4049;
+    --sel-col: #1f232a; --kv-hover: #2a2f37; --star-off: #4b525d; --askfade: rgba(17, 19, 23, 0);
+    color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root[data-mode="system"] {
+    --bg: #111317; --card: #1b1e24; --fg: #eceef1; --fg2: #b4bcc6; --fg3: #858f9b; --line: #2b3038; --press: #23272e;
+    --blue: #4c94ff; --blue-dark: #8bbcff; --blue-soft: #1a2a45; --red: #ff6b72; --red-soft: #3b1f23;
+    --orange: #ffa23a; --orange-ink: #ffb766; --orange-soft: #3a2a16; --green: #2fcf86; --green-soft: #15322a;
+    --purple: #9f8bff; --purple-soft: #29233f; --pink: #ff70a6; --pink-soft: #3b2130; --teal: #3cc6d6; --teal-soft: #143339;
+    --gray-soft: #23272e; --fixed: #4b525d; --fixed-a: #2a2f37; --fixed-b: #252a31; --fixed-edge: #5b6470; --switch-off: #3a4049;
+    --sel-col: #1f232a; --kv-hover: #2a2f37; --star-off: #4b525d; --askfade: rgba(17, 19, 23, 0);
+    color-scheme: dark;
+  }
+}
 * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
 [hidden] { display: none !important; }
 :root { padding-top: env(safe-area-inset-top, 0px); }
+html { background: var(--bg); overscroll-behavior: none; }
+body { overscroll-behavior: none; }
+body.locked { position: fixed; left: 0; right: 0; overflow: hidden; }
+.sheet, .chatscroll { overscroll-behavior: none; -webkit-overflow-scrolling: touch; }
 html, body { min-height: 100%; margin: 0; }
 img { max-width: 100%; }
 a { color: var(--blue); }
@@ -77,7 +104,7 @@ button { cursor: pointer; }
 .subtabs { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -2px; padding: 0 2px; }
 .subtabs::-webkit-scrollbar { display: none; }
 .subtabs button { flex: none; border: 0; border-radius: 999px; padding: 8px 14px; background: var(--card); font-weight: 600; font-size: 14px; color: var(--fg2); }
-.subtabs button[aria-pressed="true"] { background: var(--fg); color: #fff; }
+.subtabs button[aria-pressed="true"] { background: var(--fg); color: var(--bg); }
 .subtabs button .cnt { margin-left: 4px; color: var(--red); font-weight: 700; }
 .subtabs button[aria-pressed="true"] .cnt { color: #ffb3b9; }
 
@@ -112,6 +139,7 @@ button { cursor: pointer; }
 .iconbtn { border: 0; background: transparent; width: 40px; height: 40px; border-radius: 12px; display: grid; place-items: center; color: var(--fg2); flex: none; }
 .iconbtn:hover { background: var(--card); }
 .iconbtn svg { width: 22px; height: 22px; display: block; }
+.iconbtn:disabled { opacity: .3; cursor: default; background: transparent !important; }
 .btnrow { display: flex; flex-wrap: wrap; gap: 8px; }
 .btnrow .btn { flex: 1 1 auto; }
 
@@ -169,7 +197,7 @@ button.row:hover { background: var(--press); }
 .meter.good i { background: var(--green); }
 .kv { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
 .kv > div, .kv > button { background: var(--gray-soft); border-radius: 14px; padding: 12px 14px; display: grid; gap: 2px; min-width: 0; text-align: left; border: 0; }
-button.kvbtn:hover { background: #e9ecef; }
+button.kvbtn:hover { background: var(--kv-hover); }
 .kv span { font-size: 13px; color: var(--fg3); }
 .kv b { font-size: 18px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .kv b.alert { color: var(--red); }
@@ -245,6 +273,8 @@ button.kvbtn:hover { background: #e9ecef; }
 .chips input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
 .seg2 { display: grid; grid-template-columns: 1fr 1fr; background: var(--gray-soft); border-radius: 12px; padding: 4px; }
 .seg2 label { cursor: pointer; }
+.seg2 .jv { border: 0; background: transparent; padding: 9px; border-radius: 9px; font-weight: 600; color: var(--fg3); }
+.seg2 .jv[aria-pressed="true"] { background: var(--card); color: var(--fg); box-shadow: 0 1px 4px rgba(0, 0, 0, .08); }
 .seg2 input { position: absolute; opacity: 0; pointer-events: none; }
 .seg2 span { display: block; text-align: center; padding: 9px; border-radius: 9px; font-weight: 600; color: var(--fg3); }
 .seg2 input:checked + span { background: var(--card); color: var(--fg); box-shadow: 0 1px 4px rgba(0, 0, 0, .08); }
@@ -289,7 +319,7 @@ button.kvbtn:hover { background: #e9ecef; }
 .setrow input[type="time"]:disabled { opacity: .45; }
 .switch { position: relative; width: 48px; height: 28px; flex: none; }
 .switch input { position: absolute; inset: 0; opacity: 0; margin: 0; cursor: pointer; z-index: 1; }
-.switch span { position: absolute; inset: 0; border-radius: 999px; background: #d1d6db; pointer-events: none; }
+.switch span { position: absolute; inset: 0; border-radius: 999px; background: var(--switch-off); pointer-events: none; }
 .switch span::after { content: ""; position: absolute; top: 3px; left: 3px; width: 22px; height: 22px; border-radius: 50%; background: #fff; box-shadow: 0 1px 3px rgba(0, 0, 0, .2); }
 .switch input:checked + span { background: var(--blue); }
 .switch input:checked + span::after { transform: translateX(20px); }
@@ -302,7 +332,7 @@ button.kvbtn:hover { background: #e9ecef; }
 .askwrap {
   position: fixed; left: 0; right: 0; z-index: 30; bottom: calc(var(--nav-h) + env(safe-area-inset-bottom, 0px));
   padding: 10px max(16px, env(safe-area-inset-right, 0px)) 10px max(16px, env(safe-area-inset-left, 0px));
-  background: linear-gradient(to top, var(--bg) 65%, rgba(242, 244, 246, 0));
+  background: linear-gradient(to top, var(--bg) 65%, var(--askfade));
 }
 .askbar { max-width: 600px; margin: 0 auto; width: 100%; display: flex; align-items: center; gap: 10px; border: 0; background: var(--card); border-radius: 18px; padding: 8px 8px 8px 18px; box-shadow: 0 4px 18px rgba(0, 20, 60, .1); text-align: left; }
 .askbar span { flex: 1; min-width: 0; color: var(--fg3); font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -398,26 +428,26 @@ button.kvbtn:hover { background: #e9ecef; }
 .battery .lbl { min-width: 74px; text-align: right; }
 .stackbar { display: flex; height: 16px; border-radius: 999px; overflow: hidden; background: var(--gray-soft); }
 .stackbar i { display: block; height: 100%; }
-.stackbar .fx { background: #c5ccd4; }
+.stackbar .fx { background: var(--fixed); }
 .stackbar .pl { background: var(--blue); }
 .keyrows { display: grid; gap: 8px; }
 .keyrows div { display: flex; align-items: center; gap: 8px; font-size: 15px; }
 .keyrows div span:nth-child(2) { flex: 1; }
 .keyrows b { font-variant-numeric: tabular-nums; }
 .dot { width: 10px; height: 10px; border-radius: 3px; flex: none; }
-.dot.fx { background: #c5ccd4; } .dot.pl { background: var(--blue); } .dot.fr { background: var(--gray-soft); box-shadow: inset 0 0 0 1px var(--line); }
+.dot.fx { background: var(--fixed); } .dot.pl { background: var(--blue); } .dot.fr { background: var(--gray-soft); box-shadow: inset 0 0 0 1px var(--line); }
 .wgrid { --hpx: 40px; }
 .wgrid-head, .wgrid-body { display: grid; grid-template-columns: 30px repeat(7, minmax(0, 1fr)); }
 .wgrid-head button { border: 0; background: transparent; padding: 4px 0 8px; display: grid; justify-items: center; gap: 2px; font-size: 12px; color: var(--fg3); }
 .wgrid-head button b { font-size: 15px; color: var(--fg); width: 30px; height: 30px; display: grid; place-items: center; border-radius: 50%; font-variant-numeric: tabular-nums; }
 .wgrid-head button.today b { color: var(--blue); }
-.wgrid-head button.sel b { background: var(--fg); color: #fff; }
+.wgrid-head button.sel b { background: var(--fg); color: var(--bg); }
 .wgrid-body { border-top: 1px solid var(--line); margin-top: 2px; padding-top: 8px; }
 .whours div { height: var(--hpx); font-size: 11px; color: var(--fg3); text-align: right; padding-right: 6px; transform: translateY(-7px); font-variant-numeric: tabular-nums; }
 .wcol { position: relative; border-left: 1px solid var(--line); background-image: linear-gradient(var(--line) 1px, transparent 1px); background-size: 100% var(--hpx); cursor: pointer; }
-.wcol.sel { background-color: #f7f8fa; }
+.wcol.sel { background-color: var(--sel-col); }
 .wblk { position: absolute; display: flex; align-items: flex-start; border: 0; border-left: 3px solid var(--tone); border-radius: 4px; padding: 2px 3px; font-size: 10.5px; line-height: 1.25; overflow: hidden; text-align: left; background: var(--tone-soft); color: var(--fg); font-weight: 600; word-break: break-all; }
-.wblk.fixed { background: repeating-linear-gradient(135deg, #eceff2 0 6px, #e4e8ec 6px 12px); border-left-color: #aab3bd; color: var(--fg2); }
+.wblk.fixed { background: repeating-linear-gradient(135deg, var(--fixed-a) 0 6px, var(--fixed-b) 6px 12px); border-left-color: var(--fixed-edge); color: var(--fg2); }
 .wnow { position: absolute; left: 0; right: 0; height: 2px; background: var(--red); z-index: 2; pointer-events: none; }
 .legend { display: flex; gap: 14px; font-size: 12px; color: var(--fg3); }
 .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 5px; vertical-align: -1px; }
@@ -431,7 +461,7 @@ button.kvbtn:hover { background: #e9ecef; }
 .hdots .on { background: var(--green); color: #fff; }
 .hdots .today { box-shadow: inset 0 0 0 2px var(--fg); }
 .hdots span { opacity: .45; }
-.starbtn { border: 0; background: transparent; width: 32px; height: 32px; display: grid; place-items: center; color: #c5ccd4; padding: 0; flex: none; }
+.starbtn { border: 0; background: transparent; width: 32px; height: 32px; display: grid; place-items: center; color: var(--star-off); padding: 0; flex: none; }
 .starbtn[aria-pressed="true"] { color: #f5a623; }
 .starbtn svg { width: 20px; height: 20px; }
 .todo3 { display: grid; grid-template-columns: 32px minmax(0, 1fr) 32px; gap: 10px; align-items: center; padding: 6px 4px; }
@@ -482,6 +512,36 @@ button.kvbtn:hover { background: #e9ecef; }
 .photogrid.hero .ph:first-child { grid-column: 1 / -1; aspect-ratio: 4 / 3; }
 .photogrid.hero .addph.first { grid-column: 1 / -1; aspect-ratio: 4 / 3; font-size: 15px; gap: 8px; }
 .photogrid.hero .addph.first svg { width: 34px; height: 34px; }
+.jcal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.jcal .dw { text-align: center; font-size: 12px; color: var(--fg3); font-weight: 600; padding-bottom: 2px; }
+.jcell { position: relative; aspect-ratio: 1; max-width: 100%; border: 0; border-radius: 10px; background: var(--gray-soft); padding: 0; overflow: hidden; display: grid; place-items: center; color: var(--fg2); }
+.jcell img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
+.jcell .n { position: absolute; top: 3px; left: 5px; font-size: 11px; font-weight: 700; z-index: 1; }
+.jcell.ph .n { color: #fff; text-shadow: 0 1px 2px rgba(0, 0, 0, .6); }
+.jcell svg { width: 22px; height: 22px; color: var(--tone); margin-top: 6px; }
+.jcell.today { box-shadow: inset 0 0 0 2px var(--blue); }
+.jcell.future { opacity: .35; }
+.jcell.blank { background: transparent; }
+.wkbig { font-size: 30px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.wsec { display: grid; gap: 10px; padding: 16px; border-radius: 16px; background: var(--gray-soft); }
+.wsec h3 { margin: 0; font-size: 15px; font-weight: 700; display: flex; justify-content: space-between; gap: 8px; }
+.wsec h3 span { font-weight: 600; color: var(--fg3); font-size: 13px; }
+.hbar { display: grid; grid-template-columns: minmax(0, 1fr) 90px 40px; gap: 8px; align-items: center; font-size: 14px; }
+.hbar .meter { height: 8px; background: var(--card); }
+.hbar b { text-align: right; font-variant-numeric: tabular-nums; }
+.moods { display: flex; gap: 12px; flex-wrap: wrap; }
+.moods span { display: inline-flex; align-items: center; gap: 4px; font-size: 14px; font-weight: 600; }
+.moods svg { width: 20px; height: 20px; color: var(--tone); }
+.wphotos { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
+.wphotos button { border: 0; padding: 0; aspect-ratio: 1; max-width: 100%; border-radius: 10px; overflow: hidden; background: var(--card); }
+.wphotos img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.recrow .r small { color: var(--fg3); }
+.daypick { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px; }
+.daypick label { cursor: pointer; }
+.daypick input { position: absolute; opacity: 0; pointer-events: none; }
+.daypick span { display: grid; place-items: center; height: 34px; border-radius: 9px; background: var(--gray-soft); font-size: 13px; font-weight: 600; color: var(--fg2); font-variant-numeric: tabular-nums; }
+.daypick input:checked + span { background: var(--blue); color: #fff; }
+.daypick input:focus-visible + span { outline: 2px solid var(--blue); }
 .startrow { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
 .startrow .btn { display: grid; justify-items: center; gap: 6px; padding: 16px 8px; }
 .startrow .btn svg { width: 26px; height: 26px; }
@@ -593,12 +653,43 @@ button.kvbtn:hover { background: #e9ecef; }
   </form>
 </div>
 
+<!-- Fixed monthly payment sheet -->
+<div class="sheet-wrap" id="sh-rec" hidden>
+  <form class="sheet" id="f-rec" novalidate>
+    <header><h2 id="rc-head">고정 지출</h2><button class="iconbtn" type="button" data-close aria-label="닫기">✕</button></header>
+    <input class="title-input" id="rc-name" type="text" maxlength="60" placeholder="예: 월세, 통신비, 넷플릭스" aria-label="이름">
+    <div class="amountbox"><input id="rc-amount" type="text" inputmode="numeric" placeholder="0" aria-label="금액"><span>원</span></div>
+    <div class="field"><span class="lbl">매달 결제일</span><div class="daypick" id="rc-day" role="radiogroup" aria-label="매달 결제일"></div><p class="muted small" style="margin:0">31일을 고르면 30일까지인 달은 말일에 기록해요.</p></div>
+    <div class="field"><span class="lbl">분류</span><div class="chips" id="rc-cat"></div></div>
+    <div class="field"><label for="rc-method">결제 수단</label><select id="rc-method"><option value="card">카드</option><option value="transfer">계좌이체</option><option value="cash">현금</option></select></div>
+    <label class="check" id="rc-nowbox"><input id="rc-now" type="checkbox" checked> 이번 달 결제도 지금 가계부에 넣기</label>
+    <div class="note err" id="rc-err" hidden></div>
+    <div class="delopts" id="rc-del"></div>
+    <div class="actions"><button class="btn big grow" type="button" data-close>취소</button><button class="btn big primary grow" type="submit">저장하기</button></div>
+  </form>
+</div>
+
+<!-- Weekly look-back sheet -->
+<div class="sheet-wrap" id="sh-weekly" hidden>
+  <div class="sheet" id="wk-sheet">
+    <header><h2>주간 돌아보기</h2><button class="iconbtn" type="button" data-close aria-label="닫기">✕</button></header>
+    <div class="wkhead"><button class="iconbtn" type="button" data-wk="-1" aria-label="지난주">‹</button><div style="text-align:center"><b id="wk-range"></b><div class="muted small" id="wk-label"></div></div><button class="iconbtn" type="button" data-wk="1" aria-label="다음 주">›</button></div>
+    <div id="wk-body" style="display:grid;gap:12px"></div>
+    <form class="field" id="f-wknote" autocomplete="off"><label for="wk-note">이번 주 한 줄 정리</label><textarea id="wk-note" maxlength="500" placeholder="잘한 점, 다음 주에 바꿔 볼 점을 짧게"></textarea>
+      <button class="btn primary" type="submit">정리 저장</button></form>
+  </div>
+</div>
+
 <!-- Todo / shop task sheet -->
 <div class="sheet-wrap" id="sh-todo" hidden>
   <form class="sheet" id="f-todo" novalidate>
     <header><h2 id="td-head">할 일 편집</h2><button class="iconbtn" type="button" data-close aria-label="닫기">✕</button></header>
     <input class="title-input" id="td-text" type="text" maxlength="200" placeholder="할 일" aria-label="할 일">
-    <div class="field" id="td-duebox"><label for="td-due">마감일</label><input id="td-due" type="date"></div>
+    <div class="grid2">
+      <div class="field" id="td-duebox"><label for="td-due">마감일</label><input id="td-due" type="date"></div>
+      <div class="field"><label for="td-repeat">반복</label><select id="td-repeat"><option value="none">반복 안 함</option><option value="daily">매일</option><option value="weekly">매주 (마감 요일마다)</option><option value="monthly">매월 (마감 날짜마다)</option></select></div>
+    </div>
+    <p class="muted small" id="td-repeat-note" style="margin:0" hidden>체크하면 끝난 걸로 사라지지 않고, 다음 날짜로 넘어가요.</p>
     <div class="note err" id="td-err" hidden></div>
     <div class="delopts" id="td-del"></div>
     <div class="actions"><button class="btn big grow" type="button" data-close>취소</button><button class="btn big primary grow" type="submit">저장하기</button></div>
@@ -682,6 +773,13 @@ button.kvbtn:hover { background: #e9ecef; }
       <button class="btn" type="submit">저장</button>
     </form>
     <div class="setsec">
+      <h3>화면</h3>
+      <div class="seg4" role="group" aria-label="화면 밝기" style="grid-template-columns:repeat(3,1fr)" id="st-theme">
+        <button type="button" data-theme-set="light">밝게</button><button type="button" data-theme-set="dark">어둡게</button><button type="button" data-theme-set="system">기기 따라</button>
+      </div>
+      <p class="muted small">이 기기에만 적용돼요.</p>
+    </div>
+    <div class="setsec">
       <h3>데이터 백업</h3>
       <p class="muted small">일정·습관·할 일·일기·집중 기록·가계부를 파일 하나로 내려받거나, 백업 파일에서 다시 가져와요. 가져오면 같은 항목은 덮어쓰고 나머지는 그대로 둬요.</p>
       <div class="btnrow"><button class="btn" type="button" id="bk-export">백업 파일 내려받기</button><label class="btn" for="bk-file">백업 파일 가져오기</label></div>
@@ -754,7 +852,7 @@ button.kvbtn:hover { background: #e9ecef; }
   const METHOD = { card: "카드", cash: "현금", transfer: "계좌이체" };
   const REPEAT = { none: "", daily: "매일", weekdays: "평일마다", weekly: "매주", monthly: "매월" };
   const DOW = ["일", "월", "화", "수", "목", "금", "토"];
-  const COLLS = ["events", "ledger", "todos", "routines", "days", "focus"];
+  const COLLS = ["events", "ledger", "todos", "routines", "days", "focus", "recurring", "weeks"];
   const LSK = Object.fromEntries(COLLS.map(c => [c, `schedule-desk.${c}.v1`]));
   const LS_BUDGET = "schedule-desk.budget.v1", LS_HOURS = "schedule-desk.hours.v1", LS_PREFS = "schedule-desk.prefs.v5", LS_CHAT = "schedule-desk.chat.v1", LS_TIMER = "schedule-desk.timer.v1";
   const MOODS = [
@@ -824,7 +922,9 @@ button.kvbtn:hover { background: #e9ecef; }
   const firstOfMonth = d => new Date(d.getFullYear(), d.getMonth(), 1);
 
   // ================================================================ state
-  const S = { events: [], ledger: [], todos: [], routines: [], days: [], focus: [], briefings: [], photos: [] };
+  const S = { events: [], ledger: [], todos: [], routines: [], days: [], focus: [], briefings: [], photos: [], recurring: [], weeks: [] };
+  let jcursor = firstOfMonth(new Date()), wkCursor = null;
+  const LS_THEME = "schedule-desk.theme.v1";
   let photoCol = null, photoFullCol = null;
   let budget = 0, hours = { ...DEFAULT_HOURS };
   let mode = "loading";        // loading | db | local
@@ -1015,6 +1115,12 @@ button.kvbtn:hover { background: #e9ecef; }
       if (left2 < 0) out.push({ tone: "red", icon: ICON.won, b: `생활비 예산을 ${won(-left2)}원 넘었어요`, s: `예산 ${won(budget)}원 · 쓴 돈 ${won(spent)}원`, go: "money" });
       else out.push({ tone: left2 / budget < .2 ? "orange" : "teal", icon: ICON.won, b: `남은 ${daysLeft}일, 하루 ${won(left2 / daysLeft)}원씩 쓸 수 있어요`, s: `이번 달 생활비 예산 ${Math.round(spent / budget * 100)}% 사용`, go: "money" });
     }
+    for (const rc of S.recurring) {
+      const np = nextPay(rc), dd = dayDiff(np);
+      if (dd >= 0 && dd <= 3) out.push({ tone: "orange", icon: ICON.won, b: `${dayName(np)} ${rc.name} ${won(rc.amount)}원 결제 예정`, s: "고정 지출", go: "money" });
+    }
+    { const dw = new Date().getDay(), h = new Date().getHours();
+      if ((dw === 0 && h >= 17) || dw === 1) out.push({ tone: "purple", icon: ICON.pen, b: dw === 0 ? "이번 주 돌아보기가 준비됐어요" : "지난주 돌아보기를 볼 수 있어요", s: "집중, 습관, 지출, 일기를 한눈에", act: "weekly", date: dw === 0 ? today : ymd(addDays(new Date(), -7)) }); }
     if (new Date().getHours() >= 20 && !hasEntry(dayDoc(today))) out.push({ tone: "teal", icon: ICON.pen, b: "오늘 일기를 아직 안 남겼어요", s: "마음 날씨와 한 줄이면 충분해요", go: "review" });
     return out;
   }
@@ -1037,10 +1143,10 @@ button.kvbtn:hover { background: #e9ecef; }
     </button>`;
   }
   function todoRow(t) {
-    const di = dueInfo(t.due);
+    const di = dueInfo(t.due), rp = t.repeat && t.repeat !== "none" ? `↻ ${{ daily: "매일", weekly: "매주", monthly: "매월" }[t.repeat] || ""} · ` : "";
     return `<div class="todo3${t.done ? " done" : ""}">
       <button type="button" class="chk" data-todo-toggle="${esc(t.id)}" aria-pressed="${!!t.done}" aria-label="${esc(t.text)} ${t.done ? "완료 취소" : "완료"}">${ICON.check}</button>
-      <button type="button" class="ttext" data-todo="${esc(t.id)}"><b>${esc(t.text)}${t.example ? '<span class="tag-ex">예시</span>' : ""}</b>${di.text && !t.done ? `<span class="due ${di.cls}">${di.text}</span>` : ""}</button>
+      <button type="button" class="ttext" data-todo="${esc(t.id)}"><b>${esc(t.text)}${t.example ? '<span class="tag-ex">예시</span>' : ""}</b>${(di.text || rp) && !t.done ? `<span class="due ${di.cls}">${rp}${di.text}</span>` : ""}</button>
       ${t.done ? "<span></span>" : `<button type="button" class="starbtn" data-star="${esc(t.id)}" aria-pressed="${!!t.star}" aria-label="${t.star ? "중요 표시 빼기" : "중요 표시"}">${ICON.star}</button>`}
     </div>`;
   }
@@ -1085,7 +1191,7 @@ button.kvbtn:hover { background: #e9ecef; }
           <span class="lbl small muted">${energy ? `${energy} / 5` : "눌러서 기록"}</span></div>
       </section>
       <section class="card"><h2>오늘의 브리핑</h2>
-        ${insights().map(i => `<div class="insight" data-tone="${i.tone}"${i.go ? ` role="button" tabindex="0" data-goto="${i.go}" style="cursor:pointer"` : ""}><span class="ico">${i.icon}</span><div><b>${esc(i.b)}</b>${i.s ? `<span>${esc(i.s)}</span>` : ""}</div></div>`).join("")}
+        ${insights().map(i => `<div class="insight" data-tone="${i.tone}"${i.act ? ` role="button" tabindex="0" data-act="${i.act}"${i.date ? ` data-date="${i.date}"` : ""} style="cursor:pointer"` : i.go ? ` role="button" tabindex="0" data-goto="${i.go}" style="cursor:pointer"` : ""}><span class="ico">${i.icon}</span><div><b>${esc(i.b)}</b>${i.s ? `<span>${esc(i.s)}</span>` : ""}</div></div>`).join("")}
       </section>
       <section class="card"><div class="h2row"><h2>중요한 일</h2><span class="muted small">최대 3개</span></div>
         <div>${starred.length ? starred.map(todoRow).join("") : `<div class="empty-line">아래 할 일 목록에서 ☆를 누르면 여기에 올라와요.</div>`}</div>
@@ -1167,7 +1273,7 @@ button.kvbtn:hover { background: #e9ecef; }
         </div>
         <div class="note ${freePct < 25 ? "warn" : "ok"}">${tip}</div>
       </section>
-      <section class="card wgrid"><div class="h2row"><h2>한 주 보기</h2><div class="legend"><span><i style="background:#e4e8ec"></i>반복</span><span><i style="background:var(--blue-soft);box-shadow:inset 3px 0 0 var(--blue)"></i>계획</span></div></div>
+      <section class="card wgrid"><div class="h2row"><h2>한 주 보기</h2><div class="legend"><span><i style="background:var(--fixed-b)"></i>반복</span><span><i style="background:var(--blue-soft);box-shadow:inset 3px 0 0 var(--blue)"></i>계획</span></div></div>
         <div>
           <div class="wgrid-head"><span></span>${days.map(d => { const ds = ymd(d); return `<button type="button" class="${ds === today ? "today" : ""}${ds === schedSel ? " sel" : ""}" data-pick="${ds}" aria-label="${longDate(ds)}">${DOW[d.getDay()]}<b>${d.getDate()}</b></button>`; }).join("")}</div>
           <div class="wgrid-body"><div class="whours">${[...Array(nH)].map((_, i) => `<div>${w0 / 60 + i}</div>`).join("")}</div>${colsHtml}</div>
@@ -1244,6 +1350,26 @@ button.kvbtn:hover { background: #e9ecef; }
     const ph = photosOn(ds);
     return ph.length ? `<span class="jphoto" role="button" tabindex="0" data-photo="${esc(ph[0].id)}" aria-label="사진 크게 보기"><img src="${ph[0].thumb}" alt="">${ph.length > 1 ? `<span class="cnt">${ph.length}장</span>` : ""}</span>` : "";
   }
+  function journalCal() {
+    const y = jcursor.getFullYear(), m = jcursor.getMonth(), first = new Date(y, m, 1), n = daysIn(y, m), today = todayStr();
+    const lead = (first.getDay() + 6) % 7, cells = [];
+    for (let i = 0; i < lead; i++) cells.push(`<span class="jcell blank"></span>`);
+    let count = 0;
+    for (let d = 1; d <= n; d++) {
+      const ds = ymd(new Date(y, m, d)), doc = dayDoc(ds), ph = photosOn(ds)[0], md = MOOD[doc.mood], has = hasEntry(doc);
+      if (has) count++;
+      const cls = `jcell${ph ? " ph" : ""}${ds === today ? " today" : ""}${ds > today ? " future" : ""}`;
+      const inner = ph ? `<img src="${ph.thumb}" alt="">` : md ? MOOD_ICON[md.id] : "";
+      cells.push(ds > today ? `<span class="${cls}"><span class="n">${d}</span></span>`
+        : `<button type="button" class="${cls}"${md ? ` data-tone="${md.tone}"` : ""} data-act="${has ? "reflect" : "reflect-text"}" data-date="${ds}" aria-label="${m + 1}월 ${d}일${has ? " 일기 보기" : " 일기 쓰기"}"><span class="n">${d}</span>${inner}</button>`);
+    }
+    const isCur = mkey(jcursor) === mkey(new Date());
+    return `<section class="card">
+      <div class="h2row"><div class="monthnav"><button class="iconbtn" type="button" data-jmonth="-1" aria-label="지난달">${ICON.left}</button><b>${y}년 ${m + 1}월</b><button class="iconbtn" type="button" data-jmonth="1" aria-label="다음 달"${isCur ? " disabled" : ""}>${ICON.right}</button></div><span class="muted small">일기 ${count}일</span></div>
+      <div class="jcal">${["월", "화", "수", "목", "금", "토", "일"].map(w => `<span class="dw">${w}</span>`).join("")}${cells.join("")}</div>
+      <p class="muted small" style="margin:0">날짜를 누르면 그날 일기를 보거나 새로 쓸 수 있어요.</p>
+    </section>`;
+  }
   function renderReview() {
     const today = todayStr(), d = dayDoc(today);
     const past = S.days.filter(x => hasEntry(x) && x.id !== today && DATE_RE.test(x.id)).sort((a, b) => b.id.localeCompare(a.id)).slice(0, 120);
@@ -1255,19 +1381,28 @@ button.kvbtn:hover { background: #e9ecef; }
     }
     const streak = streakFrom(ds => hasEntry(dayDoc(ds)));
     $("tab-review").innerHTML = `
-      ${appbar("일기", canWrite ? `<button class="btn sm" type="button" data-act="reflect-other">다른 날 쓰기</button>` : "")}
+      ${appbar("일기", `<button class="btn sm" type="button" data-act="weekly">주간 돌아보기</button>${canWrite ? `<button class="btn sm" type="button" data-act="reflect-other">다른 날</button>` : ""}`)}
       <section class="card">
         ${hasEntry(d) ? `<div class="h2row"><h2>오늘</h2><span class="muted small">${streak ? `${streak}일째 쓰는 중` : ""}</span></div>
           ${heroHtml(today)}<div class="jrow" style="padding:0">${moodBadge(d)}<span><span class="t">${MOOD[d.mood] ? MOOD[d.mood].name : "날씨 없음"}</span>${entryLine(d) ? `<span class="s">${esc(entryLine(d))}</span>` : ""}${entryNext(d) ? `<span class="n">내일 먼저 → ${esc(entryNext(d))}</span>` : ""}${thumbsHtml(today)}</span></div>
           ${canWrite ? `<button class="btn" type="button" data-act="reflect" data-date="${today}">고치기</button>` : ""}`
         : `<h2>오늘은 어떤 하루였나요?</h2><p class="muted" style="margin:0">사진 한 장에 짧은 글을 남기거나, 글로만 한 줄 적어도 돼요.</p>${canWrite ? `<div class="startrow"><button class="btn big primary" type="button" data-act="reflect-photo" data-date="${today}">${ICON.camera}사진으로 기록하기</button><button class="btn big" type="button" data-act="reflect-text" data-date="${today}">${ICON.pen}글로만 기록하기</button></div>` : ""}`}
       </section>
-      <section class="card"><h2>지난 일기</h2>
+      <div class="seg2" role="group" aria-label="일기 보기 방식"><button type="button" class="jv" data-jview="list" aria-pressed="${prefs.jview !== "cal"}">목록</button><button type="button" class="jv" data-jview="cal" aria-pressed="${prefs.jview === "cal"}">달력</button></div>
+      ${prefs.jview === "cal" ? journalCal() : `<section class="card"><h2>지난 일기</h2>
         <div>${listHtml || `<div class="empty-line">아직 지난 일기가 없어요. 오늘부터 한 줄씩 쌓아 보세요.</div>`}</div>
-      </section>`;
+      </section>`}`;
   }
 
   // ================================================================ render: money (personal)
+  function recCard() {
+    const list = [...S.recurring].sort((a, b) => nextPay(a).localeCompare(nextPay(b)));
+    const total = list.reduce((a, x) => a + (Number(x.amount) || 0), 0);
+    return `<section class="card"><div class="h2row"><h2>고정 지출 ${list.length ? `<span class="pct">매달 ${won(total)}원</span>` : ""}</h2>${canWrite ? `<button class="link blue" type="button" data-act="new-rec">+ 추가</button>` : ""}</div>
+      ${list.length ? `<div>${list.map(x => { const c = CAT[x.cat] || CAT.etc, np = nextPay(x); return `<button type="button" class="row recrow" data-tone="${c.tone}" data-rec="${esc(x.id)}"><span class="ico">${esc(c.name.slice(0, 1))}</span><span><span class="t">${esc(x.name)}</span><span class="s">매달 ${x.day}일 · ${METHOD[x.method] || "카드"}</span></span><span class="r">${won(x.amount)}원<small>다음 ${dayName(np)}</small></span></button>`; }).join("")}</div>`
+        : `<div class="empty-line">월세, 통신비, 구독료처럼 매달 나가는 돈을 넣어 두면 결제일에 가계부에 자동으로 기록해요.</div>`}
+    </section>`;
+  }
   function renderMoney() {
     const y = lcursor.getFullYear(), m = lcursor.getMonth() + 1;
     const list = inMonth(S.ledger, lcursor), inc = sumOf(list, "income"), exp = sumOf(list, "expense");
@@ -1299,6 +1434,7 @@ button.kvbtn:hover { background: #e9ecef; }
         ${budgetHtml}
         <div class="kv"><div><span>들어온 돈</span><b class="plus">+${won(inc)}원</b></div><div><span>남은 돈</span><b>${inc - exp < 0 ? "-" : ""}${won(Math.abs(inc - exp))}원</b></div></div>
       </section>
+      ${recCard()}
       <section class="card"><h2>어디에 썼을까요</h2>
         ${cats.length ? `<div class="catbar">${cats.map(([c, v]) => `<i data-tone="${(CAT[c] || CAT.etc).tone}" style="flex:${v}"></i>`).join("")}</div>
           <div>${cats.map(([c, v]) => { const cc = CAT[c] || CAT.etc; return `<div class="row" data-tone="${cc.tone}"><span class="ico">${esc(cc.name.slice(0, 1))}</span><span class="t">${esc(cc.name)}<span class="pct">${Math.round(v / exp * 100)}%</span></span><span class="r">${won(v)}원</span></div>`; }).join("")}</div>`
@@ -1494,6 +1630,7 @@ button.kvbtn:hover { background: #e9ecef; }
     if (!canWrite) return;
     tdEdit = t;
     $("td-head").textContent = "할 일 편집"; $("td-text").value = t.text || ""; $("td-due").value = t.due || ""; $("td-duebox").hidden = false;
+    $("td-repeat").value = t.repeat || "none"; $("td-repeat-note").hidden = $("td-repeat").value === "none";
     showErr("td-err", "");
     delButtons("td-del", "할 일 삭제", async () => {
       const snap = { ...t };
@@ -1506,12 +1643,34 @@ button.kvbtn:hover { background: #e9ecef; }
     e.preventDefault(); if (!tdEdit) return;
     const text = $("td-text").value.trim();
     if (!text) { showErr("td-err", "할 일을 적어 주세요."); return $("td-text").focus(); }
-    try { await put("todos", { ...tdEdit, text, due: $("td-due").value || "" }); closeSheet("sh-todo"); toast("저장했어요"); }
+    const repeat = $("td-repeat").value, due = $("td-due").value || (repeat !== "none" ? todayStr() : "");
+    try { await put("todos", { ...tdEdit, text, due, repeat }); closeSheet("sh-todo"); toast("저장했어요"); }
     catch (ex) { showErr("td-err", saveErr(ex)); }
   });
+  $("td-repeat").addEventListener("change", () => { $("td-repeat-note").hidden = $("td-repeat").value === "none"; });
+  function stepDate(ds, rep) {
+    const d = parse(ds);
+    if (rep === "daily") return ymd(addDays(d, 1));
+    if (rep === "weekly") return ymd(addDays(d, 7));
+    const want = Number((ds.split("-")[2])), n = new Date(d.getFullYear(), d.getMonth() + 1, 1);
+    const last = new Date(n.getFullYear(), n.getMonth() + 1, 0).getDate();
+    return ymd(new Date(n.getFullYear(), n.getMonth(), Math.min(want, last)));
+  }
+  function nextDue(t) {
+    const today = todayStr(); let d = t.due || today;
+    if (d > today) return stepDate(d, t.repeat);
+    for (let i = 0; i < 400 && d <= today; i++) d = stepDate(d, t.repeat);
+    return d;
+  }
   async function toggleTodo(id) {
     const t = S.todos.find(x => x.id === id); if (!t || !canWrite) return;
     const before = { ...t };
+    if (t.repeat && t.repeat !== "none" && !t.done) {
+      const nd = nextDue(t);
+      try { await put("todos", { ...t, due: nd, history: [...(t.history || []), todayStr()].slice(-60), lastDoneAt: new Date().toISOString() }); toast(`'${t.text}' 끝! 다음은 ${dayName(nd)}`, () => put("todos", before)); }
+      catch (ex) { toast("저장하지 못했어요"); }
+      return;
+    }
     try { await put("todos", { ...t, done: !t.done, doneAt: !t.done ? new Date().toISOString() : "" }); if (!t.done) toast(`'${t.text}' 끝!`, () => put("todos", before)); }
     catch (ex) { toast("저장하지 못했어요"); }
   }
@@ -1521,6 +1680,170 @@ button.kvbtn:hover { background: #e9ecef; }
     try { await put("todos", { ...t, star: !t.star }); }
     catch (ex) { toast("저장하지 못했어요"); }
   }
+
+  // ---- fixed monthly payments
+  const daysIn = (y, m0) => new Date(y, m0 + 1, 0).getDate();
+  function recDate(rc, mk) { const [y, m] = mk.split("-").map(Number); return `${mk}-${pad(Math.min(Number(rc.day) || 1, daysIn(y, m - 1)))}`; }
+  function nextPay(rc) {
+    const cur = mkey(new Date()), today = todayStr();
+    if (!(rc.done || []).includes(cur) && recDate(rc, cur) >= today) return recDate(rc, cur);
+    const n = new Date(); return recDate(rc, mkey(new Date(n.getFullYear(), n.getMonth() + 1, 1)));
+  }
+  let recRunning = false;
+  async function runRecurring() {
+    if (recRunning || !canWrite || (mode !== "db" && mode !== "local")) return;
+    recRunning = true;
+    try {
+      const now = new Date(), cur = mkey(now), today = todayStr(), earliest = mkey(new Date(now.getFullYear(), now.getMonth() - 2, 1));
+      let n = 0;
+      for (const rc of [...S.recurring]) {
+        if (rc.active === false) continue;
+        const done = rc.done || [], added = [];
+        let mk = rc.start && rc.start > earliest ? rc.start : earliest;
+        for (let i = 0; i < 4 && mk <= cur; i++) {
+          if (!done.includes(mk) && recDate(rc, mk) <= today) {
+            await put("ledger", { id: `rec-${rc.id}-${mk}`, type: "expense", amount: Number(rc.amount) || 0, cat: rc.cat || "housing", memo: rc.name, date: recDate(rc, mk), method: rc.method || "card", recurring: rc.id, createdAt: new Date().toISOString() });
+            added.push(mk); n++;
+          }
+          const [y, m] = mk.split("-").map(Number); mk = mkey(new Date(y, m, 1));
+        }
+        if (added.length) await put("recurring", { ...rc, done: [...done, ...added].slice(-24) });
+      }
+      if (n) toast(`고정 지출 ${n}건을 가계부에 넣었어요`);
+    } catch (e) {}
+    finally { recRunning = false; }
+  }
+  let rcEdit = null;
+  $("rc-day").innerHTML = [...Array(31)].map((_, i) => `<label><input type="radio" name="rcday" value="${i + 1}" id="rc-day-${i + 1}"><span>${i + 1}</span></label>`).join("");
+  $("rc-cat").innerHTML = BOOKS.personal.expense.map(c => `<label data-tone="${c.tone}"><input type="radio" name="rccat" value="${c.id}" id="rc-cat-${c.id}"><span>${c.name}</span></label>`).join("");
+  $("rc-amount").addEventListener("input", e => { const d = digits(e.target.value); e.target.value = d ? Number(d).toLocaleString("ko-KR") : ""; });
+  function syncRecNow() {
+    const day = Number((document.querySelector('input[name="rcday"]:checked') || {}).value || 0);
+    $("rc-nowbox").hidden = !rcEdit || !rcEdit.isNew || !day || day > new Date().getDate();
+  }
+  $("rc-day").addEventListener("change", syncRecNow);
+  function openRec(rc, isNew) {
+    if (!canWrite) return;
+    rcEdit = { rc, isNew };
+    $("rc-head").textContent = isNew ? "고정 지출 추가" : "고정 지출 편집";
+    $("rc-name").value = rc.name || ""; $("rc-amount").value = rc.amount ? won(rc.amount) : "";
+    document.querySelectorAll('input[name="rcday"]').forEach(x => { x.checked = Number(x.value) === Number(rc.day || 0); });
+    document.querySelectorAll('input[name="rccat"]').forEach(x => { x.checked = x.value === (rc.cat || "housing"); });
+    $("rc-method").value = rc.method || "card"; $("rc-now").checked = true;
+    showErr("rc-err", ""); syncRecNow();
+    if (isNew) $("rc-del").innerHTML = "";
+    else delButtons("rc-del", "고정 지출 삭제", async () => {
+      const snap = { ...rc };
+      try { await del("recurring", snap.id); closeSheet("sh-rec"); toast("고정 지출을 지웠어요. 이미 기록된 내역은 그대로 둬요", () => put("recurring", snap)); }
+      catch (ex) { showErr("rc-err", "삭제하지 못했어요. 잠시 후 다시 시도해 주세요."); }
+    });
+    openSheet("sh-rec", "rc-name");
+  }
+  $("f-rec").addEventListener("submit", async e => {
+    e.preventDefault(); if (!rcEdit) return;
+    const name = $("rc-name").value.trim(), amount = intOf($("rc-amount").value);
+    const day = Number((document.querySelector('input[name="rcday"]:checked') || {}).value || 0);
+    if (!name) { showErr("rc-err", "이름을 적어 주세요."); return $("rc-name").focus(); }
+    if (!amount) { showErr("rc-err", "금액을 입력해 주세요."); return $("rc-amount").focus(); }
+    if (!day) { showErr("rc-err", "매달 결제일을 골라 주세요."); return; }
+    const cur = mkey(new Date()), base = rcEdit.rc;
+    const rc = { ...base, name, amount, day, cat: (document.querySelector('input[name="rccat"]:checked') || {}).value || "housing", method: $("rc-method").value, active: true, start: base.start || cur, done: base.done || [], createdAt: base.createdAt || new Date().toISOString() };
+    if (rcEdit.isNew && day <= new Date().getDate() && !$("rc-now").checked) rc.done = [...rc.done, cur];
+    try { await put("recurring", rc); closeSheet("sh-rec"); toast(rcEdit.isNew ? "고정 지출을 추가했어요" : "저장했어요"); setTimeout(runRecurring, 300); }
+    catch (ex) { showErr("rc-err", saveErr(ex)); }
+  });
+
+  // ---- weekly look-back
+  function weekReport(ws) {
+    const days = [...Array(7)].map((_, i) => addDays(ws, i)), ds = days.map(ymd), today = todayStr();
+    const from = ds[0], to = ds[6], inWk = d => d >= from && d <= to;
+    const elapsed = ds.filter(d => d <= today).length || 1;
+    const focus = ds.map(d => focusMin(f => f.date === d)), focusT = focus.reduce((a, b) => a + b, 0);
+    const habits = routineList().map(rt => ({ text: rt.text, n: ds.filter(d => d <= today && habitOn(rt.id, d)).length }));
+    const hTotal = habits.reduce((a, h) => a + h.n, 0), hRate = habits.length ? Math.round(hTotal / (habits.length * elapsed) * 100) : 0;
+    const doneTodos = [];
+    for (const t of S.todos) {
+      if (t.done && t.doneAt && inWk(ymd(new Date(t.doneAt)))) doneTodos.push(t.text);
+      for (const h of t.history || []) if (inWk(h)) doneTodos.push(t.text);
+    }
+    const prevFrom = ymd(addDays(ws, -7)), prevTo = ymd(addDays(ws, -1));
+    const exp = S.ledger.filter(t => t.type === "expense" && inWk(t.date)), expT = exp.reduce((a, t) => a + (Number(t.amount) || 0), 0);
+    const prevExp = S.ledger.filter(t => t.type === "expense" && t.date >= prevFrom && t.date <= prevTo).reduce((a, t) => a + (Number(t.amount) || 0), 0);
+    const byCat = {}; for (const t of exp) byCat[t.cat] = (byCat[t.cat] || 0) + (Number(t.amount) || 0);
+    const topCats = Object.entries(byCat).sort((a, b) => b[1] - a[1]).slice(0, 3);
+    const entries = ds.filter(d => hasEntry(dayDoc(d)));
+    const moods = {}; for (const d of ds) { const m = dayDoc(d).mood; if (MOOD[m]) moods[m] = (moods[m] || 0) + 1; }
+    const photos = S.photos.filter(x => inWk(x.date)).sort((a, b) => (a.date + a.createdAt).localeCompare(b.date + b.createdAt));
+    const en = ds.map(d => energyOf(dayDoc(d))).filter(Boolean);
+    const planned = ds.reduce((a, d) => a + eventsOn(d).filter(e => !isFixed(e) && !e.allDay && e.start).length, 0);
+    return { ds, focus, focusT, habits, hRate, doneTodos, expT, prevExp, topCats, entries, moods, photos, energy: en.length ? (en.reduce((a, b) => a + b, 0) / en.length) : 0, planned };
+  }
+  function renderWeekly() {
+    const ws = wkCursor, rp = weekReport(ws), today = todayStr();
+    const days = rp.ds.map(parse), maxF = Math.max(60, ...rp.focus), goal = (hours.focusGoal || 10) * 60;
+    const diff = Math.round((ws - weekStart(new Date())) / (7 * 86400000));
+    $("wk-range").textContent = `${days[0].getMonth() + 1}월 ${days[0].getDate()}일 – ${days[6].getMonth() + 1}월 ${days[6].getDate()}일`;
+    $("wk-label").textContent = diff === 0 ? "이번 주" : diff === -1 ? "지난주" : `${-diff}주 전`;
+    document.querySelector('#wk-sheet [data-wk="1"]').disabled = diff >= 0;
+    const expDiff = rp.prevExp ? rp.expT - rp.prevExp : 0;
+    $("wk-body").innerHTML = `
+      <div class="wsec"><h3>집중 <span>목표 ${hours.focusGoal || 10}시간</span></h3>
+        <div class="wkbig">${hm(rp.focusT)}</div>
+        <div class="meter ${rp.focusT >= goal ? "good" : ""}" style="background:var(--card)"><i style="width:${Math.min(100, rp.focusT / goal * 100)}%"></i></div>
+        <div class="daybars" style="height:80px">${days.map((d, i) => `<div class="${ymd(d) === today ? "today" : ""}"><i class="${rp.focus[i] ? "" : "zero"}" style="height:${rp.focus[i] / maxF * 100}%"></i><span>${DOW[d.getDay()]}</span></div>`).join("")}</div>
+      </div>
+      <div class="wsec"><h3>습관 <span>${rp.habits.length ? `달성률 ${rp.hRate}%` : ""}</span></h3>
+        ${rp.habits.length ? rp.habits.map(h => `<div class="hbar"><span>${esc(h.text)}</span><div class="meter ${h.n >= 7 ? "good" : ""}"><i style="width:${h.n / 7 * 100}%"></i></div><b>${h.n}/7</b></div>`).join("") : `<div class="muted small">등록한 습관이 없어요.</div>`}
+      </div>
+      <div class="wsec"><h3>끝낸 일 <span>${rp.doneTodos.length}개 · 계획한 일정 ${rp.planned}개</span></h3>
+        ${rp.doneTodos.length ? `<div class="small" style="color:var(--fg2)">${rp.doneTodos.slice(0, 8).map(t => `· ${esc(t)}`).join("<br>")}${rp.doneTodos.length > 8 ? `<br>그 밖에 ${rp.doneTodos.length - 8}개` : ""}</div>` : `<div class="muted small">이번 주에 체크한 할 일이 없어요.</div>`}
+      </div>
+      <div class="wsec"><h3>쓴 돈 <span>${rp.prevExp ? `지난주보다 ${won(Math.abs(expDiff))}원 ${expDiff > 0 ? "더" : expDiff < 0 ? "덜" : "똑같이"}` : ""}</span></h3>
+        <div class="wkbig">${won(rp.expT)}<small style="font-size:18px">원</small></div>
+        ${rp.topCats.length ? `<div class="small" style="color:var(--fg2)">${rp.topCats.map(([c, v]) => `${esc((CAT[c] || CAT.etc).name)} ${won(v)}원`).join(" · ")}</div>` : ""}
+      </div>
+      <div class="wsec"><h3>일기 <span>${rp.entries.length}/7일${rp.energy ? ` · 평균 에너지 ${rp.energy.toFixed(1)}` : ""}</span></h3>
+        ${Object.keys(rp.moods).length ? `<div class="moods">${MOODS.filter(m => rp.moods[m.id]).map(m => `<span data-tone="${m.tone}">${MOOD_ICON[m.id]}${m.name} ${rp.moods[m.id]}</span>`).join("")}</div>` : `<div class="muted small">마음 날씨 기록이 없어요.</div>`}
+        ${rp.photos.length ? `<div class="wphotos">${rp.photos.slice(0, 12).map(x => `<button type="button" data-wkphoto="${esc(x.id)}" aria-label="사진 크게 보기"><img src="${x.thumb}" alt=""></button>`).join("")}</div>` : ""}
+      </div>`;
+    const wk = S.weeks.find(w => w.id === ymd(ws));
+    if (document.activeElement !== $("wk-note")) $("wk-note").value = (wk && wk.note) || "";
+  }
+  function openWeekly(ws) { wkCursor = weekStart(ws || new Date()); renderWeekly(); openSheet("sh-weekly", "wk-range"); }
+  $("wk-sheet").addEventListener("click", e => {
+    const b = e.target.closest("[data-wk]");
+    if (b && !b.disabled) { wkCursor = addDays(wkCursor, 7 * Number(b.dataset.wk)); return renderWeekly(); }
+    const ph = e.target.closest("[data-wkphoto]"); if (ph) openPhoto(ph.dataset.wkphoto);
+  });
+  $("f-wknote").addEventListener("submit", async e => {
+    e.preventDefault(); if (!canWrite || !wkCursor) return;
+    const id = ymd(wkCursor), cur = S.weeks.find(w => w.id === id) || { id };
+    try { await put("weeks", { ...cur, id, note: $("wk-note").value.trim() }); toast("이번 주 정리를 저장했어요"); $("wk-note").blur(); }
+    catch (ex) { toast(saveErr(ex)); }
+  });
+
+  // ---- theme (this device only)
+  function applyTheme(m) {
+    const v = ["light", "dark", "system"].includes(m) ? m : "light";
+    document.documentElement.dataset.mode = v;
+    try { localStorage.setItem(LS_THEME, v); } catch (e) {}
+    const dark = v === "dark" || (v === "system" && matchMedia("(prefers-color-scheme: dark)").matches);
+    const meta = document.querySelector('meta[name="theme-color"]'); if (meta) meta.content = dark ? "#111317" : "#f2f4f6";
+    document.querySelectorAll("[data-theme-set]").forEach(b => b.setAttribute("aria-pressed", String(b.dataset.themeSet === v)));
+  }
+  $("st-theme").addEventListener("click", e => { const b = e.target.closest("[data-theme-set]"); if (b) applyTheme(b.dataset.themeSet); });
+  applyTheme(document.documentElement.dataset.mode);
+  try { matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => applyTheme(document.documentElement.dataset.mode)); } catch (e) {}
+
+  // ---- keep the page still behind sheets, chat and the photo viewer (stops the blank gap when dragging)
+  let lockY = 0, locked = false;
+  function syncLock() {
+    const need = [...document.querySelectorAll(".sheet-wrap")].some(w => !w.hidden) || !$("chatview").hidden || !$("viewer").hidden;
+    if (need && !locked) { lockY = window.scrollY; document.body.style.top = `-${lockY}px`; document.body.classList.add("locked"); locked = true; }
+    else if (!need && locked) { document.body.classList.remove("locked"); document.body.style.top = ""; window.scrollTo(0, lockY); locked = false; }
+  }
+  const lockObs = new MutationObserver(syncLock);
+  for (const el of [...document.querySelectorAll(".sheet-wrap"), $("chatview"), $("viewer")]) lockObs.observe(el, { attributes: true, attributeFilter: ["hidden"] });
 
   // ---- budget sheet
   function openBudget() {
@@ -1768,6 +2091,9 @@ button.kvbtn:hover { background: #e9ecef; }
     const tg = t.closest("[data-todo-toggle]"); if (tg) return toggleTodo(tg.dataset.todoToggle);
     const sr = t.closest("[data-star]"); if (sr) return toggleStar(sr.dataset.star);
     const td = t.closest("[data-todo]"); if (td) { const o = S.todos.find(x => x.id === td.dataset.todo); if (o) openTask(o); return; }
+    const jv = t.closest("[data-jview]"); if (jv) { prefs.jview = jv.dataset.jview; savePrefs(); return renderReview(); }
+    const jm = t.closest("[data-jmonth]"); if (jm) { jcursor = new Date(jcursor.getFullYear(), jcursor.getMonth() + Number(jm.dataset.jmonth), 1); return renderReview(); }
+    const rcb = t.closest("[data-rec]"); if (rcb) { const o = S.recurring.find(x => x.id === rcb.dataset.rec); if (o) openRec(o, false); return; }
     const ph = t.closest("[data-photo]"); if (ph) { e.stopPropagation(); return openPhoto(ph.dataset.photo); }
     const hb = t.closest("[data-habit]"); if (hb) { const [id, ds] = hb.dataset.habit.split("|"); return toggleHabit(id, ds); }
     const en = t.closest("[data-energy]");
@@ -1795,6 +2121,8 @@ button.kvbtn:hover { background: #e9ecef; }
       if (act === "routines") return openRoutines();
       if (act === "reflect") return openReview(actEl.dataset.date || todayStr());
       if (act === "reflect-other") return openReview(ymd(addDays(new Date(), -1)), "text");
+      if (act === "weekly") return openWeekly(actEl.dataset.date ? parse(actEl.dataset.date) : new Date());
+      if (act === "new-rec") return openRec({ id: newId(), method: "card", cat: "housing" }, true);
       if (act === "reflect-photo") return openReview(actEl.dataset.date || todayStr(), "photo");
       if (act === "reflect-text") return openReview(actEl.dataset.date || todayStr(), "text");
       if (act === "rate-skip") { rateId = ""; return renderFocus(); }
@@ -1826,6 +2154,7 @@ button.kvbtn:hover { background: #e9ecef; }
   });
   document.addEventListener("keydown", e => {
     if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches("[data-goto][role=button]")) { e.preventDefault(); goto(e.target.dataset.goto); }
+    if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches(".insight[data-act][role=button]")) { e.preventDefault(); e.target.click(); }
     if ((e.key === "Enter" || e.key === " ") && e.target.matches && e.target.matches("[data-photo][role=button], .jcard[role=button]")) { e.preventDefault(); e.target.click(); }
   });
   document.addEventListener("input", e => {
@@ -1908,7 +2237,7 @@ button.kvbtn:hover { background: #e9ecef; }
       for (const e of eventsOn(ds)) occ.push(`${ds} ${e.allDay ? "종일" : e.start + (e.end ? "~" + e.end : "")} | ${e.title} | ${isFixed(e) ? "반복" : "한번"} | id=${e.id}${e.location ? " | " + e.location : ""}`);
     }
     const base = S.events.slice(0, 200).map(e => `id=${e.id} | ${e.title} | 시작일 ${e.date} | ${e.allDay ? "종일" : e.start + "~" + (e.end || "")} | 분류 ${e.cat} | 반복 ${e.repeat || "none"}${e.until ? "~" + e.until : ""}`);
-    const todos = [...openTodos(), ...S.todos.filter(t => t.done).slice(-10)].map(t => `id=${t.id} | ${t.text} | 마감 ${t.due || "없음"} | ${t.done ? "완료" : "미완료"}`);
+    const todos = [...openTodos(), ...S.todos.filter(t => t.done).slice(-10)].map(t => `id=${t.id} | ${t.text} | 마감 ${t.due || "없음"}${t.repeat && t.repeat !== "none" ? ` | 반복 ${t.repeat}` : ""} | ${t.done ? "완료" : "미완료"}`);
     const rd = d.routinesDone || [];
     const rts = routineList().map(r => `id=${r.id} | ${r.text} | 오늘 ${rd.includes(r.id) ? "체크함" : "아직"} | ${streakFrom(ds => habitOn(r.id, ds))}일 연속`);
     const ws = weekStart(n), st = weekStats(weekDays(n));
@@ -1947,6 +2276,9 @@ ${focus.join("\n") || "없음"}
 [최근 일기]
 ${reviews.join("\n") || "없음"}
 
+[고정 지출 (매달)]
+${S.recurring.map(x => `id=${x.id} | ${x.name} | 매달 ${x.day}일 | ${x.amount}원 | 다음 결제 ${nextPay(x)}`).join("\n") || "없음"}
+
 [가계부]
 생활비 예산: ${budget ? budget + "원" : "없음"} / 이번 달 수입 ${sumOf(mt, "income")}원, 지출 ${sumOf(mt, "expense")}원
 이번 달 분류별: ${catSum(mt)} / 지난달 지출 ${sumOf(pm, "expense")}원 (${catSum(pm)})
@@ -1970,6 +2302,7 @@ ${recent.join("\n") || "없음"}`;
 - "이거 중요해", "오늘 꼭 할 일"은 star_todo. 별표는 3개까지라서 이미 3개면 reply로 알려 준다.
 - 변경·삭제·완료는 데이터에 있는 id만 사용한다. 대상이 헷갈리면 actions 없이 되묻는다.
 - 꼭 필요한 정보가 없으면 actions 없이 짧게 되묻는다.
+- "매달 25일 월세 50만원", "넷플릭스 매달 17일 13500원"처럼 매달 나가는 돈은 add_recurring. 한 번 쓴 돈은 add_tx.
 - 같은 시간에 다른 일정이 있으면 reply에서 알려 준다. 이번 주 빈 시간이 깨어 있는 시간의 25%보다 적으면 조금 덜어 내자고 한마디 한다.
 - 너는 병원·식당 같은 외부 예약을 실제로 할 수 없다. "예약 잡아줘"라고 하면 add_event로 넣되 제목 끝에 "(예약 확인 필요)"를 붙이고, booking_request로 네이버 예약 바로가기 링크를 준 뒤 아직 실제 예약은 되지 않았다고 말한다. 장소 이름이 구체적이지 않으면 먼저 되묻는다.
 - reply는 1~4문장. 목록은 줄바꿈과 "· ". 마크다운(**, #) 금지.
@@ -1988,7 +2321,8 @@ action 형식:
 {"type":"update_event","id":"","changes":{"date":"","start":"","end":"","title":"","location":"","allDay":false}}
 {"type":"delete_event","id":""}
 {"type":"skip_event","id":"","date":"YYYY-MM-DD"}  (반복 일정에서 그날만 빼기)
-{"type":"add_todo","text":"","due":"YYYY-MM-DD 또는 빈 문자열","star":false}
+{"type":"add_todo","text":"","due":"YYYY-MM-DD 또는 빈 문자열","star":false,"repeat":"none"}  (repeat: none|daily|weekly|monthly. "매주 화요일 분리수거"는 due를 다가오는 화요일, repeat weekly)
+{"type":"add_recurring","name":"","amount":0,"day":1,"cat":"housing","method":"card"}  (매달 나가는 고정 지출: 월세, 통신비, 구독료. day는 매달 결제일 1~31)
 {"type":"complete_todo","id":""}
 {"type":"star_todo","id":"","star":true}
 {"type":"add_habit","text":""}
@@ -2067,10 +2401,20 @@ action 형식:
       await del(coll, before.id);
       return { label: `내역 삭제 · ${before.memo || (CAT[before.cat] || CAT.etc).name} ${won(before.amount)}원`, undo: () => put(coll, before) };
     }
+    if (type === "add_recurring") {
+      const name = String(a.name || "").trim().slice(0, 60), amount = num(a.amount), day = Math.min(31, Math.max(1, num(a.day) || 1));
+      if (!name || amount <= 0) throw new Error("고정 지출 이름이나 금액을 알 수 없어요");
+      const cat = BOOKS.personal.expense.some(c => c.id === a.cat) ? a.cat : "housing";
+      const rc = { id: newId(), name, amount, day, cat, method: METHOD[a.method] ? a.method : "card", active: true, start: mkey(new Date()), done: [], createdAt: nowIso };
+      await put("recurring", rc);
+      setTimeout(runRecurring, 300);
+      return { label: `고정 지출 추가 · 매달 ${day}일 ${name} ${won(amount)}원`, undo: () => del("recurring", rc.id) };
+    }
     if (type === "add_todo") {
       const text = String(a.text || "").trim(); if (!text) throw new Error("할 일 내용이 없어요");
-      const due = DATE_RE.test(String(a.due || "")) ? a.due : "";
-      const t = { id: newId(), text: text.slice(0, 200), due, done: false, createdAt: nowIso };
+      const repeat = ["daily", "weekly", "monthly"].includes(a.repeat) ? a.repeat : "none";
+      const due = DATE_RE.test(String(a.due || "")) ? a.due : repeat !== "none" ? todayStr() : "";
+      const t = { id: newId(), text: text.slice(0, 200), due, repeat, done: false, createdAt: nowIso };
       await put("todos", t);
       return { label: `할 일 추가 · ${t.text}${due ? ` (${dueInfo(due).text})` : ""}`, undo: () => del("todos", t.id), ref: { coll: "todos", id: t.id } };
     }
@@ -2458,6 +2802,7 @@ action 형식:
       banner(e && e.code === "permission-denied" ? "데이터를 읽을 권한이 없어요. Firebase 보안 규칙을 설치 안내대로 넣었는지 확인해 주세요." : "서버 연결에 문제가 있어요. 잠시 후 다시 열어 주세요.");
     };
     for (const name of COLLS) unsubs.push(cols[name].onSnapshot(snap => { S[name] = snap.docs.map(d => ({ id: d.id, ...d.data() })); soon(); }, fail));
+    setTimeout(runRecurring, 3000);
     unsubs.push(photoCol.where("date", ">=", ymd(addDays(new Date(), -400))).onSnapshot(snap => { S.photos = snap.docs.map(d => ({ id: d.id, ...d.data() })); soon(); }, () => {}));
     unsubs.push(cols.events.onSnapshot({ includeMetadataChanges: true }, snap => {
       setSync(snap.metadata.fromCache ? "오프라인 · 연결되면 자동으로 맞춰져요" : snap.metadata.hasPendingWrites ? "저장하는 중…" : "저장됨 · 모든 기기에서 같은 내용이 보여요");
@@ -2563,7 +2908,7 @@ action 형식:
     setComposer(); refreshAssistant(); resumeTimer(); renderAll();
     const cfg = window.FIREBASE_CONFIG;
     if (!cfg || !cfg.apiKey || !window.firebase) {
-      mode = "local"; canWrite = true; loadLocal(); loadAiLocal(); refreshAssistant();
+      mode = "local"; canWrite = true; loadLocal(); loadAiLocal(); refreshAssistant(); setTimeout(runRecurring, 500);
       setSync("이 기기에만 저장돼요");
       banner("아직 클라우드에 연결되지 않아서 이 기기에만 저장돼요. 설치 안내의 Firebase 설정을 마치면 컴퓨터와 휴대폰이 같은 내용을 보여 줘요.");
       renderAll(); return;
@@ -2591,6 +2936,7 @@ action 형식:
       hiddenAt = 0; renderAll();
     });
     window.addEventListener("online", reconnect);
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) setTimeout(runRecurring, 2500); });
   }
 
   // refresh time-based content once a minute while nothing is being edited
