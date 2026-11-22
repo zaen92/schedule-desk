@@ -661,11 +661,12 @@ button.kvbtn:hover { background: #e9ecef; }
 <!-- Sign-in screen -->
 <section class="authview" id="authview" hidden aria-label="로그인">
   <form class="authbox" id="f-auth" novalidate>
-    <div><h1>일정 데스크</h1><p class="muted" style="margin:6px 0 0">로그인하면 컴퓨터와 휴대폰에서 같은 내용을 볼 수 있어요.</p></div>
+    <div><h1>일정 데스크</h1><p class="muted" style="margin:6px 0 0">로그인하면 컴퓨터와 휴대폰에서 같은 내용을 볼 수 있어요. 비밀번호 없이 메일로 받은 링크로 들어올 수도 있어요.</p></div>
     <div class="field"><label for="au-email">이메일</label><input id="au-email" type="email" class="input" autocomplete="username" inputmode="email"></div>
     <div class="field"><label for="au-pw">비밀번호</label><input id="au-pw" type="password" class="input" autocomplete="current-password"></div>
     <div class="note err" id="au-err" hidden></div>
     <button class="btn big primary" type="submit" id="au-login">로그인</button>
+    <button class="btn big soft" type="button" id="au-link">비밀번호 없이 메일로 로그인</button>
     <button class="btn big" type="button" id="au-signup">새 계정 만들기</button>
     <button class="link" type="button" id="au-reset" style="justify-self:center">비밀번호를 잊었어요</button>
   </form>
@@ -2276,13 +2277,18 @@ action 형식:
     "auth/network-request-failed": "인터넷 연결을 확인해 주세요.", "auth/operation-not-allowed": "Firebase 콘솔에서 '이메일/비밀번호' 로그인을 켜야 해요. 설치 안내 2단계를 확인해 주세요.",
     "auth/unauthorized-domain": "이 주소가 Firebase에 등록되지 않았어요. Authentication → 설정 → 승인된 도메인에 이 주소를 추가해 주세요.",
     "auth/admin-restricted-operation": "새 계정 만들기가 꺼져 있어요. 이미 만든 계정으로 로그인해 주세요.",
+    "auth/invalid-action-code": "링크가 만료됐거나 이미 사용됐어요. 로그인 링크를 다시 받아 주세요.",
+    "auth/expired-action-code": "링크가 만료됐어요. 로그인 링크를 다시 받아 주세요.",
+    "auth/quota-exceeded": "오늘 보낼 수 있는 메일 수를 넘었어요. 비밀번호로 로그인하거나 내일 다시 해 주세요.",
+    "auth/unauthorized-continue-uri": "이 주소가 Firebase에 등록되지 않았어요. Authentication → 설정 → 승인된 도메인에 이 주소를 추가해 주세요.",
+    "auth/missing-continue-uri": "로그인 링크를 만들지 못했어요. 잠시 후 다시 해 주세요.",
   };
   const authErr = e => AUTH_ERR[e && e.code] || "로그인하지 못했어요. 잠시 후 다시 해 주세요.";
   async function authGo(kind) {
     const email = $("au-email").value.trim(), pw = $("au-pw").value;
     if (!email) { showErr("au-err", "이메일을 입력해 주세요."); return $("au-email").focus(); }
     if (kind !== "reset" && !pw) { showErr("au-err", "비밀번호를 입력해 주세요."); return $("au-pw").focus(); }
-    const btns = ["au-login", "au-signup", "au-reset"].map($); btns.forEach(b => { b.disabled = true; });
+    const btns = ["au-login", "au-link", "au-signup", "au-reset"].map($); btns.forEach(b => { b.disabled = true; });
     showErr("au-err", "");
     try {
       if (kind === "login") await fauth.signInWithEmailAndPassword(email, pw);
@@ -2291,7 +2297,44 @@ action 형식:
     } catch (e) { $("au-err").className = "note err"; showErr("au-err", authErr(e)); }
     finally { btns.forEach(b => { b.disabled = false; }); }
   }
-  $("f-auth").addEventListener("submit", e => { e.preventDefault(); authGo("login"); });
+  const LS_LINKMAIL = "schedule-desk.linkEmail.v1";
+  let linkPending = false;
+  function authNote(text, tone) { const el = $("au-err"); el.textContent = text || ""; el.className = "note " + (tone || "err"); el.hidden = !text; }
+  async function sendLink() {
+    const email = $("au-email").value.trim();
+    if (!email) { authNote("이메일을 입력해 주세요."); return $("au-email").focus(); }
+    const btns = ["au-login", "au-link", "au-signup", "au-reset"].map($); btns.forEach(b => { b.disabled = true; });
+    authNote("");
+    try {
+      await fauth.sendSignInLinkToEmail(email, { url: location.origin + location.pathname, handleCodeInApp: true });
+      try { localStorage.setItem(LS_LINKMAIL, email); } catch (e) {}
+      authNote(`${email}(으)로 로그인 링크를 보냈어요. 메일의 링크를 누르면 바로 로그인돼요. 메일이 안 보이면 스팸함도 확인해 주세요.`, "ok");
+    } catch (e) {
+      authNote(e && e.code === "auth/operation-not-allowed" ? "Firebase 콘솔 Authentication → 로그인 방법 → 이메일/비밀번호에서 '이메일 링크(비밀번호 없는 로그인)'도 켜야 해요." : authErr(e));
+    } finally { btns.forEach(b => { b.disabled = false; }); }
+  }
+  async function finishLink(email) {
+    await fauth.signInWithEmailLink(email, location.href);
+    linkPending = false;
+    try { localStorage.removeItem(LS_LINKMAIL); } catch (e) {}
+    try { history.replaceState(null, "", location.pathname); } catch (e) {}
+  }
+  function handleEmailLink() {
+    if (!fauth.isSignInWithEmailLink(location.href)) return;
+    let email = "";
+    try { email = localStorage.getItem(LS_LINKMAIL) || ""; } catch (e) {}
+    linkPending = true;
+    if (email) finishLink(email).catch(e => { $("au-email").value = email; authNote(authErr(e)); });
+    else authNote("메일 링크로 들어왔어요. 링크를 받은 이메일 주소를 입력하고 '로그인'을 눌러 주세요.", "ok");
+  }
+  $("au-link").addEventListener("click", sendLink);
+  $("f-auth").addEventListener("submit", e => {
+    e.preventDefault();
+    if (!linkPending) return authGo("login");
+    const email = $("au-email").value.trim();
+    if (!email) { authNote("링크를 받은 이메일 주소를 입력해 주세요."); return $("au-email").focus(); }
+    finishLink(email).catch(err => authNote(authErr(err)));
+  });
   $("au-signup").addEventListener("click", () => authGo("signup"));
   $("au-reset").addEventListener("click", () => authGo("reset"));
 
@@ -2315,7 +2358,18 @@ action 형식:
     } catch (e) {
       setSync("연결 안 됨"); banner("Firebase 설정에 문제가 있어요. firebase-config.js 내용을 확인해 주세요."); return;
     }
+    handleEmailLink();
     fauth.onAuthStateChanged(u => { if (u) startUser(u); else showAuth(); });
+    // Phones pause background tabs: reconnect at once when the app comes back after a while,
+    // so changes made on the other device show up without waiting for the old connection to time out.
+    let hiddenAt = 0;
+    const reconnect = () => { if (mode !== "db" || !fdb) return; fdb.disableNetwork().then(() => fdb.enableNetwork()).catch(() => {}); };
+    document.addEventListener("visibilitychange", () => {
+      if (document.hidden) { hiddenAt = Date.now(); return; }
+      if (hiddenAt && Date.now() - hiddenAt > 15000) reconnect();
+      hiddenAt = 0; renderAll();
+    });
+    window.addEventListener("online", reconnect);
   }
 
   // refresh time-based content once a minute while nothing is being edited
