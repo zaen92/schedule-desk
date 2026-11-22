@@ -1175,7 +1175,7 @@ button.kvbtn:hover { background: #e9ecef; }
   function renderAll() {
     for (const t of TABS) $("tab-" + t).hidden = prefs.tab !== t;
     document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === prefs.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
-    $("askwrap").hidden = prefs.tab !== "today" || !$("chatview").hidden;
+    $("askwrap").hidden = !$("chatview").hidden || (prefs.tab === "focus" && !!timer);
     // keep what the person is typing when live data re-renders the tab
     const keep = [...document.querySelectorAll("[data-keep] [name]")].map(el => ({ form: el.closest("[data-keep]").dataset.keep, name: el.name, value: el.value, dirty: el.value !== el.defaultValue, focus: el === document.activeElement }));
     if (prefs.tab === "today") renderToday();
