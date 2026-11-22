@@ -1,13 +1,13 @@
 {
-  "name": "차곡",
-  "short_name": "차곡",
-  "description": "일정, 할 일, 습관, 몰입, 일기, 가계부를 차곡차곡 쌓아 가는 나만의 비서",
+  "name": "Pebblo",
+  "short_name": "Pebblo",
+  "description": "일정, 할 일, 습관, 몰입, 일기, 가계부를 조약돌처럼 하나씩 쌓아 가는 나만의 비서",
   "lang": "ko",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
-  "background_color": "#f2f4f6",
-  "theme_color": "#f2f4f6",
+  "background_color": "#fbf1e3",
+  "theme_color": "#fbf1e3",
   "icons": [
     {
       "src": "icon-192.png",
