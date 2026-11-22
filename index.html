@@ -104,6 +104,7 @@ a { color: var(--blue); }
 body {
   background: var(--bg); color: var(--fg); font-family: var(--font); font-size: 15px; line-height: 1.5;
   letter-spacing: -0.01em; -webkit-font-smoothing: antialiased;
+  word-break: keep-all; overflow-wrap: anywhere;
   padding-left: max(16px, env(safe-area-inset-left, 0px));
   padding-right: max(16px, env(safe-area-inset-right, 0px));
   padding-block: 0 calc(var(--nav-h) + 90px + env(safe-area-inset-bottom, 0px));
@@ -113,8 +114,8 @@ button, input, select, textarea { font: inherit; color: inherit; letter-spacing:
 button { cursor: pointer; }
 :focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
 .num { font-variant-numeric: tabular-nums; }
-.wrap { max-width: 600px; margin: 0 auto; display: grid; gap: 12px; }
-.tabview { display: grid; gap: 12px; min-width: 0; align-content: start; }
+.wrap { max-width: 600px; margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; }
+.tabview { display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; align-content: start; }
 
 /* App bar (sticky) */
 .appbar { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20; background: var(--bg); display: grid; gap: 10px; padding: 14px 2px 10px; }
@@ -134,7 +135,7 @@ button { cursor: pointer; }
 .hello .date { margin: 0; font-size: 14px; color: var(--fg3); font-weight: 500; }
 .hello h2 { margin: 0; font-size: 26px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.3; text-wrap: balance; }
 .hello .lead { margin: 0; font-size: 16px; color: var(--fg2); }
-.card { background: var(--card); border-radius: 20px; padding: 20px; display: grid; gap: 12px; min-width: 0; }
+.card { background: var(--card); border-radius: 20px; padding: 20px; display: grid; grid-template-columns: minmax(0, 1fr); gap: 12px; min-width: 0; }
 .card h2 { margin: 0; font-size: 17px; font-weight: 700; letter-spacing: -0.02em; }
 .h2row { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
 .muted { color: var(--fg3); }
@@ -169,7 +170,7 @@ button { cursor: pointer; }
 button.row:hover { background: var(--press); }
 .ico { width: 40px; height: 40px; border-radius: 50%; display: grid; place-items: center; background: var(--tone-soft, var(--gray-soft)); color: var(--tone, var(--fg2)); font-weight: 700; font-size: 14px; flex: none; }
 .ico svg { width: 20px; height: 20px; display: block; }
-.row .t { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; display: block; }
+.row .t { font-weight: 600; font-size: 15px; overflow-wrap: anywhere; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; }
 .row .s { font-size: 13px; color: var(--fg3); display: block; overflow-wrap: anywhere; }
 .row .r { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap; display: grid; gap: 2px; justify-items: end; }
 .row .r small { font-weight: 500; font-size: 12px; color: var(--fg3); }
@@ -191,7 +192,8 @@ button.row:hover { background: var(--press); }
 /* Briefing */
 .insight { display: grid; grid-template-columns: 42px minmax(0, 1fr); gap: 12px; align-items: center; padding: 4px 0; }
 .insight > div b { display: block; font-weight: 600; font-size: 15px; }
-.insight > div span { display: block; font-size: 13px; color: var(--fg3); }
+.insight > div { min-width: 0; }
+.insight > div span { display: block; font-size: 13px; color: var(--fg3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .insight .ico { width: 42px; height: 42px; border-radius: 14px; }
 .insight .ico svg { width: 22px; height: 22px; }
 .brief { background: var(--blue-soft); }
@@ -209,7 +211,7 @@ button.row:hover { background: var(--press); }
 .now-chip { display: inline-block; font-size: 11px; font-weight: 700; color: var(--blue); background: var(--blue-soft); border-radius: 6px; padding: 1px 6px; margin-left: 6px; vertical-align: 1px; }
 
 /* Money + stats */
-.bigmoney { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.2; }
+.bigmoney { white-space: nowrap; overflow: hidden; font-size: 28px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; line-height: 1.2; }
 .bigmoney small { font-size: 20px; font-weight: 700; }
 .meter { height: 10px; border-radius: 999px; background: var(--gray-soft); overflow: hidden; }
 .meter i { display: block; height: 100%; border-radius: inherit; background: var(--blue); }
@@ -220,7 +222,8 @@ button.row:hover { background: var(--press); }
 .kv > div, .kv > button { background: var(--gray-soft); border-radius: 14px; padding: 12px 14px; display: grid; gap: 2px; min-width: 0; text-align: left; border: 0; }
 button.kvbtn:hover { background: var(--kv-hover); }
 .kv span { font-size: 13px; color: var(--fg3); }
-.kv b { font-size: 18px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.kv span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.kv b { font-size: 18px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
 .kv b.alert { color: var(--red); }
 .monthnav { display: flex; align-items: center; gap: 2px; }
 .monthnav b { font-size: 16px; }
@@ -437,8 +440,8 @@ button.kvbtn:hover { background: var(--kv-hover); }
 /* ---- v3: summary strip, energy battery, time bar, habits, focus, journal ---- */
 .stats3 { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .stats3 > * { background: var(--gray-soft); border-radius: 14px; padding: 12px; display: grid; gap: 2px; border: 0; text-align: left; min-width: 0; }
-.stats3 span { font-size: 12px; color: var(--fg3); }
-.stats3 b { font-size: 17px; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.stats3 span { font-size: 12px; color: var(--fg3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.stats3 b { font-size: 17px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
 .battery { display: flex; align-items: center; gap: 10px; }
 .battery .cells { display: grid; grid-template-columns: repeat(5, 1fr); gap: 4px; flex: 1; border: 2px solid var(--line); border-radius: 10px; padding: 3px; position: relative; }
 .battery .cells::after { content: ""; position: absolute; right: -7px; top: 50%; width: 4px; height: 12px; margin-top: -6px; border-radius: 0 3px 3px 0; background: var(--line); }
@@ -446,7 +449,8 @@ button.kvbtn:hover { background: var(--kv-hover); }
 .battery button.on { background: var(--green); }
 .battery.low button.on { background: var(--orange); }
 .battery.empty button.on { background: var(--red); }
-.battery .lbl { min-width: 74px; text-align: right; }
+.battery .lbl { min-width: 0; text-align: right; white-space: nowrap; }
+.battery .cells { min-width: 0; margin-right: 7px; }
 .stackbar { display: flex; height: 16px; border-radius: 999px; overflow: hidden; background: var(--gray-soft); }
 .stackbar i { display: block; height: 100%; }
 .stackbar .fx { background: var(--fixed); }
@@ -1205,13 +1209,13 @@ button.kvbtn:hover { background: var(--kv-hover); }
       <section class="hello"><p class="date">${longDate(today)}</p><h2>${greeting()}</h2></section>
       <section class="card">
         <div class="stats3">
-          <button type="button" data-goto="focus"><span>오늘 몰입 시간</span><b>${hm(focusMin(f => f.date === today))}</b></button>
-          <button type="button" data-goto="today" data-scroll="habits"><span>오늘 지킨 습관</span><b>${rdN} / ${rts.length}</b></button>
+          <button type="button" data-goto="focus"><span>몰입 시간</span><b>${hm(focusMin(f => f.date === today))}</b></button>
+          <button type="button" data-goto="today" data-scroll="habits"><span>지킨 습관</span><b>${rdN} / ${rts.length}</b></button>
           <button type="button" data-goto="review"><span>연속 기록</span><b>${streak ? `${streak}일째` : "오늘부터"}</b></button>
         </div>
         <div class="battery${bcls}"><span class="lbl small muted" style="text-align:left;min-width:0">오늘 에너지</span>
           <div class="cells" role="group" aria-label="오늘 에너지">${[1, 2, 3, 4, 5].map(v => `<button type="button" class="${v <= energy ? "on" : ""}" data-energy="${v}" aria-label="에너지 ${v}/5" aria-pressed="${v === energy}"></button>`).join("")}</div>
-          <span class="lbl small muted">${energy ? `${energy} / 5` : "칸을 눌러 기록"}</span></div>
+          <span class="lbl small muted">${energy ? `${energy} / 5` : "눌러서 기록"}</span></div>
       </section>
       <section class="card"><h2>오늘의 브리핑</h2>
         ${insights().map(i => `<div class="insight" data-tone="${i.tone}"${i.act ? ` role="button" tabindex="0" data-act="${i.act}"${i.date ? ` data-date="${i.date}"` : ""} style="cursor:pointer"` : i.go ? ` role="button" tabindex="0" data-goto="${i.go}" style="cursor:pointer"` : ""}><span class="ico">${i.icon}</span><div><b>${esc(i.b)}</b>${i.s ? `<span>${esc(i.s)}</span>` : ""}</div></div>`).join("")}
@@ -1474,6 +1478,18 @@ button.kvbtn:hover { background: var(--kv-hover); }
   }
 
   // ================================================================ shell
+  function fitNumbers() {
+    document.querySelectorAll(".stats3 b, .kv b, .bigmoney").forEach(el => {
+      el.style.fontSize = ""; el.style.whiteSpace = ""; el.querySelectorAll("small").forEach(x => x.style.fontSize = "");
+      let fs = parseFloat(getComputedStyle(el).fontSize), n = 0;
+      while (el.scrollWidth > el.clientWidth + 1 && fs > 12 && n++ < 20) {
+        fs -= 1; el.style.fontSize = fs + "px";
+        el.querySelectorAll("small").forEach(x => x.style.fontSize = Math.round(fs * .7) + "px");
+      }
+      if (el.scrollWidth > el.clientWidth + 1) el.style.whiteSpace = "normal";   // still too long even when small: wrap between words
+    });
+  }
+  window.addEventListener("resize", () => requestAnimationFrame(fitNumbers));
   function renderAll() {
     for (const t of TABS) $("tab-" + t).hidden = prefs.tab !== t;
     document.querySelectorAll("[data-tab]").forEach(b => { if (b.dataset.tab === prefs.tab) b.setAttribute("aria-current", "page"); else b.removeAttribute("aria-current"); });
@@ -1492,7 +1508,9 @@ button.kvbtn:hover { background: var(--kv-hover); }
     }
     if (!$("chatview").hidden) renderChat();
     if (!$("sh-routines").hidden) renderRoutineSheet();
+    fitNumbers();
   }
+  try { document.fonts.ready.then(fitNumbers); } catch (e) {}
   function goto(tab) { if (!TABS.includes(tab)) return; prefs.tab = tab; savePrefs(); renderAll(); window.scrollTo({ top: 0 }); }
 
   // ================================================================ toast
