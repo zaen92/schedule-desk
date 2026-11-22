@@ -1,7 +1,7 @@
 {
-  "name": "착착",
-  "short_name": "착착",
-  "description": "일정, 할 일, 습관, 몰입, 일기, 가계부를 착착 챙겨 주는 나만의 비서",
+  "name": "키록",
+  "short_name": "키록",
+  "description": "일정, 할 일, 습관, 몰입, 일기, 가계부를 한곳에 쌓아 가는 나만의 비서",
   "lang": "ko",
   "start_url": "./",
   "scope": "./",
