@@ -732,7 +732,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
       <p class="muted small" id="rv-photo-note" style="margin:0" hidden></p>
     </div>
     <div class="field"><label for="rv-date">날짜</label><input id="rv-date" type="date"></div>
-    <div class="field"><span class="lbl">오늘 날씨는 어땠나요? (마음 날씨)</span><div class="moodpick" id="rv-mood" role="radiogroup" aria-label="마음 날씨"></div></div>
+    <div class="field"><span class="lbl">오늘 마음 날씨는 어땠나요?</span><div class="moodpick" id="rv-mood" role="radiogroup" aria-label="마음 날씨"></div></div>
     <div class="field"><label for="rv-good" id="rv-good-label">한 줄 일기</label><textarea id="rv-good" maxlength="500" placeholder="오늘 있었던 일, 느낀 점을 한 줄로"></textarea></div>
     <div class="field"><label for="rv-change">내일 가장 먼저 할 일</label><input id="rv-change" type="text" maxlength="120" placeholder="예: 출근하자마자 메일 정리"></div>
     <button class="link blue" type="button" id="rv-to-photo" style="justify-self:start" hidden>+ 사진도 넣기</button>
@@ -860,7 +860,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
     { id: "cloud", name: "흐림", tone: "gray" }, { id: "rain", name: "비", tone: "blue" }, { id: "storm", name: "천둥", tone: "purple" },
   ];
   const MOOD = Object.fromEntries(MOODS.map(m => [m.id, m]));
-  const RATE = { 1: "자꾸 흐트러짐", 2: "괜찮았어요", 3: "깊이 몰입" };
+  const RATE = { 1: "산만했어요", 2: "보통이었어요", 3: "푹 빠졌어요" };
   const HPX = 40;
   const DEFAULT_HOURS = { start: "07:00", end: "23:00", focusGoal: 10 };
 
@@ -1091,7 +1091,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
     const next = timed.find(e => toMin(e.start) > nm);
     if (cur) out.push({ tone: "blue", icon: ICON.clock, b: `지금 '${cur.title}' 하는 중`, s: `${fmtT(cur.end || fromMin(endMin(cur)))}까지${next ? ` · 다음은 ${fmtT(next.start)} ${next.title}` : ""}` });
     else if (next) out.push({ tone: "blue", icon: ICON.clock, b: `${inMins(toMin(next.start) - nm)} '${next.title}'`, s: `${fmtT(next.start)}${next.location ? " · " + next.location : ""}` });
-    else if (timed.length) out.push({ tone: "green", icon: ICON.check, b: "오늘 계획한 일정을 다 지나왔어요", s: `${timed.length}개 일정` });
+    else if (timed.length) out.push({ tone: "green", icon: ICON.check, b: "오늘 일정을 모두 마쳤어요", s: `${timed.length}개 일정` });
     else out.push({ tone: "green", icon: ICON.sun, b: "오늘은 잡힌 일정이 없어요", s: "계획 탭에서 하루를 채워 보세요", go: "week" });
     const open = openTodos();
     const over = open.filter(t => t.due && t.due < today), dueToday = open.filter(t => t.due === today);
@@ -1182,13 +1182,13 @@ button.kvbtn:hover { background: var(--kv-hover); }
       <section class="hello"><p class="date">${longDate(today)}</p><h2>${greeting()}</h2></section>
       <section class="card">
         <div class="stats3">
-          <button type="button" data-goto="focus"><span>오늘 집중</span><b>${hm(focusMin(f => f.date === today))}</b></button>
-          <button type="button" data-goto="today" data-scroll="habits"><span>습관</span><b>${rdN} / ${rts.length}</b></button>
-          <button type="button" data-goto="review"><span>기록 연속</span><b>${streak}일</b></button>
+          <button type="button" data-goto="focus"><span>오늘 집중한 시간</span><b>${hm(focusMin(f => f.date === today))}</b></button>
+          <button type="button" data-goto="today" data-scroll="habits"><span>오늘 지킨 습관</span><b>${rdN} / ${rts.length}</b></button>
+          <button type="button" data-goto="review"><span>연속 기록</span><b>${streak ? `${streak}일째` : "오늘부터"}</b></button>
         </div>
-        <div class="battery${bcls}"><span class="lbl small muted" style="text-align:left;min-width:0">에너지</span>
+        <div class="battery${bcls}"><span class="lbl small muted" style="text-align:left;min-width:0">오늘 에너지</span>
           <div class="cells" role="group" aria-label="오늘 에너지">${[1, 2, 3, 4, 5].map(v => `<button type="button" class="${v <= energy ? "on" : ""}" data-energy="${v}" aria-label="에너지 ${v}/5" aria-pressed="${v === energy}"></button>`).join("")}</div>
-          <span class="lbl small muted">${energy ? `${energy} / 5` : "눌러서 기록"}</span></div>
+          <span class="lbl small muted">${energy ? `${energy} / 5` : "칸을 눌러 기록"}</span></div>
       </section>
       <section class="card"><h2>오늘의 브리핑</h2>
         ${insights().map(i => `<div class="insight" data-tone="${i.tone}"${i.act ? ` role="button" tabindex="0" data-act="${i.act}"${i.date ? ` data-date="${i.date}"` : ""} style="cursor:pointer"` : i.go ? ` role="button" tabindex="0" data-goto="${i.go}" style="cursor:pointer"` : ""}><span class="ico">${i.icon}</span><div><b>${esc(i.b)}</b>${i.s ? `<span>${esc(i.s)}</span>` : ""}</div></div>`).join("")}
@@ -1256,7 +1256,8 @@ button.kvbtn:hover { background: var(--kv-hover); }
     const rel = ["오늘", "내일", "모레", "어제"].includes(dayName(schedSel));
     const tip = st.free < 0 ? `깨어 있는 시간보다 일정이 ${hm(-st.free)} 많아요. 겹치는 일정을 정리해 보세요.`
       : freePct < 25 ? `빈 시간이 ${freePct}%뿐이에요. 하나가 밀리면 줄줄이 밀리기 쉬우니 조금 덜어 내 보세요.`
-      : `빈 시간이 ${freePct}% 있어요. 갑자기 생기는 일과 쉬는 시간으로 남겨 두세요.`;
+      : st.fixed + st.planned === 0 ? "아직 이번 주에 잡힌 일정이 없어요. 반복 일정부터 넣어 두면 쓸 수 있는 시간이 보여요."
+      : `빈 시간이 ${freePct}% 남아 있어요. 갑자기 생기는 일과 쉬는 시간을 위해 남겨 두세요.`;
     $("tab-week").innerHTML = `
       ${appbar("계획", addBtn("new-event", "일정", ` data-date="${schedSel}"`))}
       <section class="card">
@@ -1264,7 +1265,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
           <div style="text-align:center"><b>${days[0].getMonth() + 1}월 ${days[0].getDate()}일 – ${days[6].getMonth() + 1}월 ${days[6].getDate()}일</b><div class="muted small">${wLabel}</div></div>
           <button class="iconbtn" type="button" data-week="1" aria-label="다음 주">${ICON.right}</button></div>
         ${diffW !== 0 ? `<button class="link blue" type="button" data-pick="${today}" style="justify-self:center">이번 주로 돌아가기</button>` : ""}
-        <div><div class="muted small">이번 주 깨어 있는 시간 ${hm(st.awake)}</div></div>
+        <div><div class="muted small">깨어 있는 시간은 모두 ${hm(st.awake)}이에요</div></div>
         <div class="stackbar" role="img" aria-label="반복 일정 ${Math.round(pc(st.fixed))}%, 계획 ${Math.round(pc(st.planned))}%, 빈 시간 ${Math.max(0, freePct)}%"><i class="fx" style="width:${pc(st.fixed)}%"></i><i class="pl" style="width:${pc(st.planned)}%"></i></div>
         <div class="keyrows">
           <div><i class="dot fx"></i><span>반복 일정</span><b>${hm(st.fixed)}</b></div>
@@ -1301,12 +1302,12 @@ button.kvbtn:hover { background: var(--kv-hover); }
       $("tab-focus").innerHTML = `
         ${appbar("집중")}
         <section class="card" style="gap:18px;padding-block:28px">
-          <div class="muted small" style="text-align:center">${timer.paused ? "잠시 멈춤" : `${Math.round(timer.total / 60)}분 세션`}</div>
+          <div class="muted small" style="text-align:center">${timer.paused ? "잠시 멈춤" : `${Math.round(timer.total / 60)}분 집중 중`}</div>
           <div class="digits" id="tm-text">${fmtClock(rem)}</div>
           <div class="meter thick"><i id="tm-bar" style="width:${(1 - rem / timer.total) * 100}%"></i></div>
           <b style="font-size:17px;text-align:center">${esc(timer.text || "자유 집중")}</b>
-          <div class="btnrow"><button class="btn big" type="button" data-act="focus-pause">${timer.paused ? "다시 시작" : "일시정지"}</button><button class="btn big primary" type="button" data-act="focus-finish">지금 끝내기</button></div>
-          <button class="link" type="button" data-act="focus-cancel" style="justify-self:center">세션 취소 (기록 안 함)</button>
+          <div class="btnrow"><button class="btn big" type="button" data-act="focus-pause">${timer.paused ? "다시 시작" : "일시정지"}</button><button class="btn big primary" type="button" data-act="focus-finish">여기까지 기록하기</button></div>
+          <button class="link" type="button" data-act="focus-cancel" style="justify-self:center">기록하지 않고 그만두기</button>
         </section>
         <p class="muted small" style="margin:0 4px;text-align:center">다른 앱을 써도 시간은 흘러가요. 돌아오면 남은 시간이 맞춰져 있어요.</p>`;
       return;
@@ -1319,21 +1320,21 @@ button.kvbtn:hover { background: var(--kv-hover); }
     const toRate = rateId && S.focus.find(f => f.id === rateId && !f.rating);
     $("tab-focus").innerHTML = `
       ${appbar("집중")}
-      ${toRate ? `<section class="card"><h2>방금 ${toRate.minutes}분, 어땠나요?</h2><div class="rate3">${[1, 2, 3].map(v => `<button type="button" data-rate="${v}">${RATE[v]}</button>`).join("")}</div><button class="link" type="button" data-act="rate-skip" style="justify-self:center">넘어가기</button></section>` : ""}
-      <section class="card"><h2>새 집중 세션</h2>
-        <form class="field" data-keep="focusform" autocomplete="off"><input class="input" name="ftext" type="text" maxlength="120" value="${esc(focusSel.text)}" placeholder="이번에 끝낼 일 (비워 두면 자유 집중)" aria-label="이번에 끝낼 일"></form>
+      ${toRate ? `<section class="card"><h2>방금 ${toRate.minutes}분 집중, 어땠나요?</h2><div class="rate3">${[1, 2, 3].map(v => `<button type="button" data-rate="${v}">${RATE[v]}</button>`).join("")}</div><button class="link" type="button" data-act="rate-skip" style="justify-self:center">넘어가기</button></section>` : ""}
+      <section class="card"><h2>집중 시작하기</h2>
+        <form class="field" data-keep="focusform" autocomplete="off"><input class="input" name="ftext" type="text" maxlength="120" value="${esc(focusSel.text)}" placeholder="무엇을 할지 적어 주세요 (비워 둬도 돼요)" aria-label="이번에 끝낼 일"></form>
         ${open.length ? `<div class="tchips">${open.map(t => `<button type="button" data-ftodo="${esc(t.id)}" aria-pressed="${focusSel.todoId === t.id}">${t.star ? "★ " : ""}${esc(t.text)}</button>`).join("")}</div>` : ""}
         <div class="stepper"><button type="button" data-step="-5" aria-label="5분 줄이기">−</button><b>${mins}분</b><button type="button" data-step="5" aria-label="5분 늘리기">+</button></div>
         <div class="presets">${[15, 30, 45, 60].map(v => `<button type="button" data-dur="${v}" aria-pressed="${mins === v}">${v}분</button>`).join("")}</div>
         <button class="btn big primary" type="button" data-act="focus-start">${mins}분 시작하기</button>
       </section>
-      <section class="card"><div class="h2row"><h2>이번 주 집중</h2><span class="muted small">목표 ${hours.focusGoal || 10}시간</span></div>
+      <section class="card"><div class="h2row"><h2>이번 주 집중한 시간</h2><span class="muted small">목표 ${hours.focusGoal || 10}시간</span></div>
         <div class="bigmoney" style="font-size:24px">${hm(weekM)}</div>
         <div class="meter ${weekM >= goalM ? "good" : ""}"><i style="width:${Math.min(100, weekM / goalM * 100)}%"></i></div>
         <div class="daybars">${days.map((d, i) => `<div class="${ymd(d) === today ? "today" : ""}"><i class="${perDay[i] ? "" : "zero"}" style="height:${perDay[i] / maxM * 100}%" title="${perDay[i]}분"></i><span>${DOW[d.getDay()]}</span></div>`).join("")}</div>
       </section>
-      <section class="card"><h2>최근 세션</h2>
-        <div>${recent.length ? recent.map(f => `<div class="row" data-tone="blue"><span class="ico">${ICON.timer}</span><span><span class="t">${esc(f.text || "자유 집중")}</span><span class="s">${dayName(f.date)}${f.rating ? " · " + RATE[f.rating] : ""}</span></span><span class="r">${f.minutes}분</span></div>`).join("") : `<div class="empty-line">아직 세션이 없어요. 15분부터 가볍게 시작해 보세요.</div>`}</div>
+      <section class="card"><h2>최근 집중 기록</h2>
+        <div>${recent.length ? recent.map(f => `<div class="row" data-tone="blue"><span class="ico">${ICON.timer}</span><span><span class="t">${esc(f.text || "자유 집중")}</span><span class="s">${dayName(f.date)}${f.rating ? " · " + RATE[f.rating] : ""}</span></span><span class="r">${f.minutes}분</span></div>`).join("") : `<div class="empty-line">아직 기록이 없어요. 15분부터 가볍게 시작해 보세요.</div>`}</div>
       </section>`;
   }
 
@@ -1381,10 +1382,10 @@ button.kvbtn:hover { background: var(--kv-hover); }
     }
     const streak = streakFrom(ds => hasEntry(dayDoc(ds)));
     $("tab-review").innerHTML = `
-      ${appbar("일기", `<button class="btn sm" type="button" data-act="weekly">주간 돌아보기</button>${canWrite ? `<button class="btn sm" type="button" data-act="reflect-other">다른 날</button>` : ""}`)}
+      ${appbar("일기", `<button class="btn sm" type="button" data-act="weekly">주간 돌아보기</button>${canWrite ? `<button class="btn sm" type="button" data-act="reflect-other">지난 날 쓰기</button>` : ""}`)}
       <section class="card">
         ${hasEntry(d) ? `<div class="h2row"><h2>오늘</h2><span class="muted small">${streak ? `${streak}일째 쓰는 중` : ""}</span></div>
-          ${heroHtml(today)}<div class="jrow" style="padding:0">${moodBadge(d)}<span><span class="t">${MOOD[d.mood] ? MOOD[d.mood].name : "날씨 없음"}</span>${entryLine(d) ? `<span class="s">${esc(entryLine(d))}</span>` : ""}${entryNext(d) ? `<span class="n">내일 먼저 → ${esc(entryNext(d))}</span>` : ""}${thumbsHtml(today)}</span></div>
+          ${heroHtml(today)}<div class="jrow" style="padding:0">${moodBadge(d)}<span><span class="t">${MOOD[d.mood] ? MOOD[d.mood].name : "오늘의 기록"}</span>${entryLine(d) ? `<span class="s">${esc(entryLine(d))}</span>` : ""}${entryNext(d) ? `<span class="n">내일 먼저 → ${esc(entryNext(d))}</span>` : ""}${thumbsHtml(today)}</span></div>
           ${canWrite ? `<button class="btn" type="button" data-act="reflect" data-date="${today}">고치기</button>` : ""}`
         : `<h2>오늘은 어떤 하루였나요?</h2><p class="muted" style="margin:0">사진 한 장에 짧은 글을 남기거나, 글로만 한 줄 적어도 돼요.</p>${canWrite ? `<div class="startrow"><button class="btn big primary" type="button" data-act="reflect-photo" data-date="${today}">${ICON.camera}사진으로 기록하기</button><button class="btn big" type="button" data-act="reflect-text" data-date="${today}">${ICON.pen}글로만 기록하기</button></div>` : ""}`}
       </section>
@@ -1399,7 +1400,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
     const list = [...S.recurring].sort((a, b) => nextPay(a).localeCompare(nextPay(b)));
     const total = list.reduce((a, x) => a + (Number(x.amount) || 0), 0);
     return `<section class="card"><div class="h2row"><h2>고정 지출 ${list.length ? `<span class="pct">매달 ${won(total)}원</span>` : ""}</h2>${canWrite ? `<button class="link blue" type="button" data-act="new-rec">+ 추가</button>` : ""}</div>
-      ${list.length ? `<div>${list.map(x => { const c = CAT[x.cat] || CAT.etc, np = nextPay(x); return `<button type="button" class="row recrow" data-tone="${c.tone}" data-rec="${esc(x.id)}"><span class="ico">${esc(c.name.slice(0, 1))}</span><span><span class="t">${esc(x.name)}</span><span class="s">매달 ${x.day}일 · ${METHOD[x.method] || "카드"}</span></span><span class="r">${won(x.amount)}원<small>다음 ${dayName(np)}</small></span></button>`; }).join("")}</div>`
+      ${list.length ? `<div>${list.map(x => { const c = CAT[x.cat] || CAT.etc, np = nextPay(x); return `<button type="button" class="row recrow" data-tone="${c.tone}" data-rec="${esc(x.id)}"><span class="ico">${esc(c.name.slice(0, 1))}</span><span><span class="t">${esc(x.name)}</span><span class="s">매달 ${x.day}일 · ${METHOD[x.method] || "카드"}</span></span><span class="r">${won(x.amount)}원<small>다음 결제 ${dayName(np)}</small></span></button>`; }).join("")}</div>`
         : `<div class="empty-line">월세, 통신비, 구독료처럼 매달 나가는 돈을 넣어 두면 결제일에 가계부에 자동으로 기록해요.</div>`}
     </section>`;
   }
@@ -1432,7 +1433,7 @@ button.kvbtn:hover { background: var(--kv-hover); }
           ${!isCur ? `<button class="link blue" type="button" data-month="0">이번 달</button>` : ""}</div>
         <div><div class="muted small">${m}월에 쓴 돈 (생활비)</div><div class="bigmoney">${won(exp)}<small>원</small></div>${cmp ? `<div class="muted small">${cmp}</div>` : ""}</div>
         ${budgetHtml}
-        <div class="kv"><div><span>들어온 돈</span><b class="plus">+${won(inc)}원</b></div><div><span>남은 돈</span><b>${inc - exp < 0 ? "-" : ""}${won(Math.abs(inc - exp))}원</b></div></div>
+        <div class="kv"><div><span>들어온 돈</span><b class="plus">+${won(inc)}원</b></div><div><span>${inc - exp < 0 ? "수입보다 더 쓴 돈" : "수입에서 남은 돈"}</span><b class="${inc - exp < 0 ? "minus" : ""}">${won(Math.abs(inc - exp))}원</b></div></div>
       </section>
       ${recCard()}
       <section class="card"><h2>어디에 썼을까요</h2>
@@ -2069,11 +2070,11 @@ button.kvbtn:hover { background: var(--kv-hover); }
       const rec = { id: newId(), date: todayStr(), minutes: mins, todoId: t.target, text: t.text, full: !!full, startedAt: t.startedAt, createdAt: new Date().toISOString() };
       try { await put("focus", rec); rateId = rec.id; } catch (e) {}
       try { if (full && navigator.userActivation && navigator.userActivation.hasBeenActive && navigator.vibrate) navigator.vibrate([200, 100, 200]); } catch (e) {}
-      toast(full ? `${mins}분 세션 완료!` : `${mins}분을 기록했어요`);
+      toast(full ? `${mins}분 집중 완료!` : `${mins}분을 기록했어요`);
     } else toast("1분이 안 돼서 기록하지 않았어요");
     renderAll();
   }
-  function cancelFocus() { timer = null; saveTimer(); stopTick(); keepAwake(false); toast("세션을 취소했어요"); renderAll(); }
+  function cancelFocus() { timer = null; saveTimer(); stopTick(); keepAwake(false); toast("기록하지 않고 그만뒀어요"); renderAll(); }
   function resumeTimer() {
     try { const t = JSON.parse(localStorage.getItem(LS_TIMER) || "null"); if (t && t.total > 0 && (t.paused || t.end)) { timer = t; stopTick(); tickId = setInterval(tick, 500); } } catch (e) {}
   }
