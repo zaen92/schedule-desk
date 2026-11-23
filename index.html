@@ -637,6 +637,29 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
 .mstat div { background: var(--card); border-radius: 12px; padding: 10px; display: grid; gap: 2px; min-width: 0; }
 .mstat span { font-size: 12px; color: var(--fg3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .mstat b { font-size: 16px; font-variant-numeric: tabular-nums; white-space: nowrap; overflow: hidden; }
+/* v6: habit schedules, swipe to delete */
+.habit .sched { display: block; font-size: 12px; color: var(--fg3); font-weight: 500; margin-top: 1px; }
+.habit .name { border: 0; background: transparent; padding: 0; text-align: left; font: inherit; font-weight: 600; color: var(--fg); cursor: pointer; }
+.hdots .off { background: transparent; box-shadow: inset 0 0 0 1px var(--line); opacity: .55; }
+.hdots .off.on { background: var(--green); box-shadow: none; opacity: 1; }
+.seg3 { grid-template-columns: repeat(3, 1fr) !important; }
+.wdpick { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+.wdpick label { cursor: pointer; }
+.wdpick input { position: absolute; opacity: 0; pointer-events: none; }
+.wdpick span { display: grid; place-items: center; height: 40px; border-radius: 10px; background: var(--gray-soft); font-weight: 600; color: var(--fg2); }
+.wdpick input:checked + span { background: var(--blue); color: var(--on-blue); }
+.wdpick input:focus-visible + span { outline: 2px solid var(--blue); outline-offset: 2px; }
+.quickdays { display: flex; gap: 6px; flex-wrap: wrap; }
+.rtrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 10px; align-items: center; width: 100%; border: 0; background: transparent; text-align: left; padding: 10px 4px; border-radius: 12px; }
+.rtrow:hover { background: var(--press); }
+.rtrow b { display: block; font-weight: 600; overflow-wrap: anywhere; }
+.rtrow small { color: var(--fg3); font-size: 12px; }
+.swipe { position: relative; overflow: hidden; border-radius: 12px; touch-action: pan-y; }
+.swipe-body { position: relative; background: var(--card); transition: transform .22s ease; will-change: transform; }
+.swipe.dragging .swipe-body { transition: none; }
+.swipe-del { position: absolute; top: 0; right: 0; bottom: 0; width: 84px; border: 0; background: var(--red); color: #fff; font-weight: 700; font-size: 14px; cursor: pointer; }
+.swipe:not(.dragging):not(.open) > .swipe-del { visibility: hidden; }
+.swipe + .swipe > .swipe-body > .habit { border-top: 1px solid var(--line); }
 </style>
 </head>
 <body>
@@ -840,13 +863,36 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
 <div class="sheet-wrap" id="sh-routines" hidden>
   <div class="sheet">
     <header><h2>습관 관리</h2><button class="iconbtn" type="button" data-close aria-label="닫기">✕</button></header>
-    <p class="muted small" style="margin:0">매일 체크하는 습관이에요. 처음엔 2~3개로 시작해서 익숙해지면 늘려 보세요.</p>
+    <p class="muted small" style="margin:0">매일, 정한 요일, 또는 일주일에 몇 번처럼 습관마다 주기를 정할 수 있어요. 누르면 고칠 수 있어요.</p>
     <div id="rt-list"></div>
-    <form class="addtodo" id="f-routine" autocomplete="off" style="grid-template-columns:minmax(0,1fr) auto">
-      <input id="rt-text" type="text" maxlength="80" placeholder="예: 물 2리터 마시기" aria-label="새 습관">
-      <button class="btn primary" type="submit">추가</button>
-    </form>
+    <button class="btn primary" type="button" id="rt-new">+ 새 습관</button>
   </div>
+</div>
+
+<!-- Habit edit sheet -->
+<div class="sheet-wrap" id="sh-habit" hidden>
+  <form class="sheet" id="f-habit" novalidate>
+    <header><h2 id="hb-head">새 습관</h2><button class="iconbtn" type="button" data-close aria-label="닫기">✕</button></header>
+    <input class="title-input" id="hb-text" type="text" maxlength="80" placeholder="예: 물 2리터 마시기, 헬스장 가기" aria-label="습관 이름">
+    <div class="field"><span class="lbl">얼마나 자주</span>
+      <div class="seg2 seg3" role="radiogroup" aria-label="습관 주기">
+        <label><input type="radio" name="hbfreq" value="daily" id="hb-daily"><span>매일</span></label>
+        <label><input type="radio" name="hbfreq" value="days" id="hb-days"><span>요일 정하기</span></label>
+        <label><input type="radio" name="hbfreq" value="weekly" id="hb-weekly"><span>주 몇 회</span></label>
+      </div>
+    </div>
+    <div class="field" id="hb-daysbox" hidden><span class="lbl">하는 요일</span>
+      <div class="wdpick" id="hb-wd" role="group" aria-label="하는 요일"></div>
+      <div class="quickdays"><button class="btn sm" type="button" data-hbquick="1,2,3,4,5">평일</button><button class="btn sm" type="button" data-hbquick="0,6">주말</button><button class="btn sm" type="button" data-hbquick="1,3,5">월·수·금</button><button class="btn sm" type="button" data-hbquick="2,4">화·목</button></div>
+    </div>
+    <div class="field" id="hb-weekbox" hidden><span class="lbl">일주일에</span>
+      <div class="stepper"><button type="button" data-hbstep="-1" aria-label="횟수 줄이기">−</button><b id="hb-n">3회</b><button type="button" data-hbstep="1" aria-label="횟수 늘리기">+</button></div>
+      <p class="muted small" style="margin:0">요일은 상관없이, 한 주(월~일) 동안 이만큼 하면 달성이에요.</p>
+    </div>
+    <div class="note err" id="hb-err" hidden></div>
+    <div class="delopts" id="hb-del"></div>
+    <div class="actions"><button class="btn big grow" type="button" data-close>취소</button><button class="btn big primary grow" type="submit">저장하기</button></div>
+  </form>
 </div>
 
 <div class="viewer" id="viewer" hidden role="dialog" aria-label="사진 크게 보기"><img id="viewer-img" alt=""><button class="vclose" type="button" id="viewer-close" aria-label="닫기">✕</button><p class="vnote" id="viewer-note"></p></div>
@@ -1133,6 +1179,48 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
   const dayUndo = ds => { const before = S.days.find(d => d.id === ds); return () => before ? put("days", before) : del("days", ds); };
   const routineList = () => [...S.routines].sort((a, b) => (a.order ?? 99) - (b.order ?? 99) || (a.createdAt || "").localeCompare(b.createdAt || ""));
   const habitOn = (id, ds) => (dayDoc(ds).routinesDone || []).includes(id);
+  const habitFreq = r => r && r.freq === "days" && Array.isArray(r.days) && r.days.length ? "days" : r && r.freq === "weekly" && Number(r.perWeek) > 0 ? "weekly" : "daily";
+  const habitDueOn = (r, ds) => habitFreq(r) !== "days" || r.days.includes(parse(ds).getDay());
+  const habitWeekCount = (r, d) => weekDays(d).filter(x => habitOn(r.id, ymd(x))).length;
+  function habitSched(r) {
+    const f = habitFreq(r);
+    if (f === "weekly") return `주 ${r.perWeek}회`;
+    if (f === "days") {
+      const k = [...r.days].sort().join(",");
+      if (k === "1,2,3,4,5") return "평일"; if (k === "0,6") return "주말"; if (r.days.length === 7) return "매일";
+      return [1, 2, 3, 4, 5, 6, 0].filter(d => r.days.includes(d)).map(d => DOW[d]).join("·");
+    }
+    return "매일";
+  }
+  function habitStreak(r) {   // daily: days in a row · days: scheduled days in a row · weekly: weeks in a row that hit the goal
+    const f = habitFreq(r), today = todayStr();
+    if (f === "weekly") {
+      let ws = weekStart(new Date()), n = 0;
+      if (habitWeekCount(r, ws) < r.perWeek) ws = addDays(ws, -7);
+      while (n < 104 && habitWeekCount(r, ws) >= r.perWeek) { n++; ws = addDays(ws, -7); }
+      return n ? `${n}주 연속` : "";
+    }
+    let d = new Date(), n = 0;
+    for (let i = 0; i < 400; i++, d = addDays(d, -1)) {
+      const ds = ymd(d);
+      if (!habitDueOn(r, ds)) continue;
+      if (habitOn(r.id, ds)) n++; else if (ds !== today) break;
+    }
+    return n ? (f === "days" ? `${n}번 연속` : `${n}일 연속`) : "";
+  }
+  function habitScore(r, dsList) {   // dsList: days that have already come
+    const f = habitFreq(r);
+    if (f === "weekly") {
+      const wk = {};
+      for (const ds of dsList) { const k = ymd(weekStart(parse(ds))); (wk[k] ||= []).push(ds); }
+      let done = 0, target = 0;
+      for (const list of Object.values(wk)) { target += Math.min(r.perWeek, list.length); done += Math.min(r.perWeek, list.filter(ds => habitOn(r.id, ds)).length); }
+      return { done: Math.min(done, target), target };
+    }
+    const due = dsList.filter(ds => habitDueOn(r, ds));
+    return { done: due.filter(ds => habitOn(r.id, ds)).length, target: due.length };
+  }
+  const habitTodayList = () => { const t = todayStr(); return routineList().filter(r => habitFreq(r) === "weekly" ? habitWeekCount(r, new Date()) < r.perWeek || habitOn(r.id, t) : habitDueOn(r, t)); };
   const routinesDoneOn = ds => routineList().filter(r => habitOn(r.id, ds)).length;
   // journal fields (older records used good/change; read them as the line and the next step)
   const entryLine = d => (d && (d.line || d.good)) || "";
@@ -1293,7 +1381,7 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
   function ddayCard() {
     const list = sortedDdays(), shown = showAllDd ? list : list.slice(0, 4);
     return `<section class="card"><div class="h2row"><h2>디데이</h2>${canWrite ? `<button class="link blue" type="button" data-act="dday-new">+ 추가</button>` : ""}</div>
-      ${list.length ? `<div>${shown.map(x => { const d = dayDiff(x.date); return `<button type="button" class="dday" data-dday="${esc(x.id)}"><span><b>${esc(x.title)}</b><small>${dateLbl(x.date)}</small></span><span class="dn${d === 0 ? " today" : d < 0 ? " past" : ""}">${ddLabel(x.date)}</span></button>`; }).join("")}</div>
+      ${list.length ? `<div>${shown.map(x => { const d = dayDiff(x.date); return swipeWrap("dday", x.id, `<button type="button" class="dday" data-dday="${esc(x.id)}"><span><b>${esc(x.title)}</b><small>${dateLbl(x.date)}</small></span><span class="dn${d === 0 ? " today" : d < 0 ? " past" : ""}">${ddLabel(x.date)}</span></button>`); }).join("")}</div>
         ${list.length > 4 ? `<button class="link" type="button" data-act="dday-more" style="justify-self:start">${showAllDd ? "접기" : `${list.length - 4}개 더 보기`}</button>` : ""}`
         : `<div class="empty-line">시험, 여행, 기념일처럼 기다리는 날을 넣으면 남은 날을 세어 드려요.</div>`}
     </section>`;
@@ -1313,35 +1401,39 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
       <span><span class="t">${esc(ev.title)}${now ? '<span class="now-chip">진행 중</span>' : ""}${ev.example ? '<span class="tag-ex">예시</span>' : ""}</span><span class="s">${esc(sub.join(" · "))}</span></span>
     </button>`;
   }
+  // swipe a row to the left to reveal "삭제"; a long swipe deletes right away (undo in the toast)
+  const swipeWrap = (kind, id, inner) => canWrite ? `<div class="swipe" data-swipe="${kind}:${esc(id)}"><button type="button" class="swipe-del" tabindex="-1">삭제</button><div class="swipe-body">${inner}</div></div>` : inner;
   function todoRow(t) {
     const di = dueInfo(t.due), rp = t.repeat && t.repeat !== "none" ? `↻ ${{ daily: "매일", weekly: "매주", monthly: "매월" }[t.repeat] || ""} · ` : "";
-    return `<div class="todo3${t.done ? " done" : ""}">
+    return swipeWrap("todo", t.id, `<div class="todo3${t.done ? " done" : ""}">
       <button type="button" class="chk" data-todo-toggle="${esc(t.id)}" aria-pressed="${!!t.done}" aria-label="${esc(t.text)} ${t.done ? "완료 취소" : "완료"}">${ICON.check}</button>
       <button type="button" class="ttext" data-todo="${esc(t.id)}"><b>${esc(t.text)}${t.example ? '<span class="tag-ex">예시</span>' : ""}</b>${(di.text || rp) && !t.done ? `<span class="due ${di.cls}">${rp}${di.text}</span>` : ""}</button>
       ${t.done ? "<span></span>" : `<button type="button" class="starbtn" data-star="${esc(t.id)}" aria-pressed="${!!t.star}" aria-label="${t.star ? "중요 표시 빼기" : "중요 표시"}">${ICON.star}</button>`}
-    </div>`;
+    </div>`);
   }
   function txRow(t) {
     const c = CAT[t.cat] || CAT.etc, inc = t.type === "income";
-    return `<button type="button" class="row" data-tone="${c.tone}" data-tx="personal:${esc(t.id)}">
+    return swipeWrap("tx", t.id, `<button type="button" class="row" data-tone="${c.tone}" data-tx="personal:${esc(t.id)}">
       <span class="ico">${esc(c.name.slice(0, 1))}</span>
       <span><span class="t">${esc(t.memo || c.name)}${t.example ? '<span class="tag-ex">예시</span>' : ""}</span><span class="s">${esc(c.name)}${t.method ? " · " + (METHOD[t.method] || "") : ""}</span></span>
-      <span class="r${inc ? " plus" : ""}">${inc ? "+" : "-"}${won(t.amount)}원</span></button>`;
+      <span class="r${inc ? " plus" : ""}">${inc ? "+" : "-"}${won(t.amount)}원</span></button>`);
   }
   function habitRow(r, days, today) {
-    const st = streakFrom(ds => habitOn(r.id, ds));
-    return `<div class="habit"><span class="name">${esc(r.text)}</span><span class="streak${st >= 3 ? " hot" : ""}">${st ? `${st}일 연속` : ""}</span>
+    const st = habitStreak(r), f = habitFreq(r), n = Number(st.replace(/\D/g, "")) || 0;
+    const wkc = f === "weekly" ? habitWeekCount(r, parse(today)) : 0;
+    const side = f === "weekly" ? `이번 주 ${wkc}/${r.perWeek}${st ? ` · ${st}` : ""}` : st;
+    return swipeWrap("habit", r.id, `<div class="habit"><button type="button" class="name" data-hedit="${esc(r.id)}">${esc(r.text)}<span class="sched">${habitSched(r)}</span></button><span class="streak${n >= 3 || (f === "weekly" && wkc >= r.perWeek) ? " hot" : ""}">${side}</span>
       <div class="hdots">${days.map(d => {
-        const ds = ymd(d), on = habitOn(r.id, ds), lbl = `${esc(r.text)} ${d.getMonth() + 1}월 ${d.getDate()}일 ${on ? "완료 취소" : "완료"}`;
-        return ds > today || !canWrite ? `<span class="${on ? "on" : ""}">${DOW[d.getDay()]}</span>`
-          : `<button type="button" class="${on ? "on" : ""}${ds === today ? " today" : ""}" data-habit="${esc(r.id)}|${ds}" aria-pressed="${on}" aria-label="${lbl}">${DOW[d.getDay()]}</button>`;
-      }).join("")}</div></div>`;
+        const ds = ymd(d), on = habitOn(r.id, ds), off = !habitDueOn(r, ds), lbl = `${esc(r.text)} ${d.getMonth() + 1}월 ${d.getDate()}일 ${on ? "완료 취소" : "완료"}${off ? " (쉬는 요일)" : ""}`;
+        return ds > today || !canWrite ? `<span class="${on ? "on" : ""}${off ? " off" : ""}">${DOW[d.getDay()]}</span>`
+          : `<button type="button" class="${on ? "on" : ""}${off ? " off" : ""}${ds === today ? " today" : ""}" data-habit="${esc(r.id)}|${ds}" aria-pressed="${on}" aria-label="${lbl}">${DOW[d.getDay()]}</button>`;
+      }).join("")}</div></div>`);
   }
 
   // ================================================================ render: home
   function renderToday() {
     const today = todayStr(), d = dayDoc(today), todays = eventsOn(today), open = openTodos();
-    const rts = routineList(), rdN = routinesDoneOn(today), days = weekDays(new Date());
+    const rts = routineList(), todayHabits = habitTodayList(), rdN = todayHabits.filter(r => habitOn(r.id, today)).length, days = weekDays(new Date());
     const energy = energyOf(d), streak = streakFrom(activeDay);
     const spent = sumOf(inMonth(S.ledger, new Date()), "expense");
     const starred = open.filter(t => t.star).slice(0, 3);
@@ -1354,7 +1446,7 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
       <section class="card">
         <div class="stats3">
           <button type="button" data-goto="focus"><span>몰입 시간</span><b>${hm(focusMin(f => f.date === today))}</b></button>
-          <button type="button" data-goto="today" data-scroll="habits"><span>지킨 습관</span><b>${rdN} / ${rts.length}</b></button>
+          <button type="button" data-goto="today" data-scroll="habits"><span>지킨 습관</span><b>${rdN} / ${todayHabits.length}</b></button>
           <button type="button" data-goto="review"><span>연속 기록</span><b>${streak ? `${streak}일째` : "오늘부터"}</b></button>
         </div>
         <div class="battery${bcls}"><span class="lbl small muted" style="text-align:left;min-width:0">오늘 에너지</span>
@@ -1373,7 +1465,7 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
         ${canWrite ? `<button class="btn" type="button" data-act="new-event">+ 일정 추가</button>` : ""}
       </section>
       <section class="card" id="habits"><div class="h2row"><h2>이번 주 습관</h2>${canWrite ? `<button class="link blue" type="button" data-act="routines">관리</button>` : ""}</div>
-        <div>${rts.length ? rts.map(r => habitRow(r, days, today)).join("") : `<div class="empty-line">매일 지키고 싶은 습관을 '관리'에서 추가해 보세요.</div>`}</div>
+        <div>${rts.length ? rts.map(r => habitRow(r, days, today)).join("") : `<div class="empty-line">지키고 싶은 습관을 '관리'에서 추가해 보세요. 매일, 요일, 주 몇 회 중에 고를 수 있어요.</div>`}</div>
       </section>
       <section class="card"><div class="h2row"><h2>할 일 <span class="pct">${open.length}개 남음</span></h2></div>
         <div>${rest.length ? rest.slice(0, 10).map(todoRow).join("") : `<div class="empty-line">${open.length ? "남은 할 일은 모두 중요한 일에 올라가 있어요." : "남은 할 일이 없어요."}</div>`}</div>
@@ -1572,7 +1664,7 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
     const list = [...S.recurring].sort((a, b) => nextPay(a).localeCompare(nextPay(b)));
     const total = list.reduce((a, x) => a + (Number(x.amount) || 0), 0);
     return `<section class="card"><div class="h2row"><h2>고정 지출 ${list.length ? `<span class="pct">매달 ${won(total)}원</span>` : ""}</h2>${canWrite ? `<button class="link blue" type="button" data-act="new-rec">+ 추가</button>` : ""}</div>
-      ${list.length ? `<div>${list.map(x => { const c = CAT[x.cat] || CAT.etc, np = nextPay(x); return `<button type="button" class="row recrow" data-tone="${c.tone}" data-rec="${esc(x.id)}"><span class="ico">${esc(c.name.slice(0, 1))}</span><span><span class="t">${esc(x.name)}</span><span class="s">매달 ${x.day}일 · ${METHOD[x.method] || "카드"}</span></span><span class="r">${won(x.amount)}원<small>다음 결제 ${dayName(np)}</small></span></button>`; }).join("")}</div>`
+      ${list.length ? `<div>${list.map(x => { const c = CAT[x.cat] || CAT.etc, np = nextPay(x); return swipeWrap("rec", x.id, `<button type="button" class="row recrow" data-tone="${c.tone}" data-rec="${esc(x.id)}"><span class="ico">${esc(c.name.slice(0, 1))}</span><span><span class="t">${esc(x.name)}</span><span class="s">매달 ${x.day}일 · ${METHOD[x.method] || "카드"}</span></span><span class="r">${won(x.amount)}원<small>다음 결제 ${dayName(np)}</small></span></button>`); }).join("")}</div>`
         : `<div class="empty-line">월세, 통신비, 구독료처럼 매달 나가는 돈을 넣어 두면 결제일에 가계부에 자동으로 기록해요.</div>`}
     </section>`;
   }
@@ -2007,8 +2099,8 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
     const from = ds[0], to = ds[6], inWk = d => d >= from && d <= to;
     const elapsed = ds.filter(d => d <= today).length || 1;
     const focus = ds.map(d => focusMin(f => f.date === d)), focusT = focus.reduce((a, b) => a + b, 0);
-    const habits = routineList().map(rt => ({ text: rt.text, n: ds.filter(d => d <= today && habitOn(rt.id, d)).length }));
-    const hTotal = habits.reduce((a, h) => a + h.n, 0), hRate = habits.length ? Math.round(hTotal / (habits.length * elapsed) * 100) : 0;
+    const habits = routineList().map(rt => { const sc = habitScore(rt, ds.filter(d => d <= today)); return { text: rt.text, n: sc.done, t: sc.target }; });
+    const hT = habits.reduce((a, h) => a + h.t, 0), hRate = hT ? Math.round(habits.reduce((a, h) => a + h.n, 0) / hT * 100) : 0;
     const doneTodos = [];
     for (const t of S.todos) {
       if (t.done && t.doneAt && inWk(ymd(new Date(t.doneAt)))) doneTodos.push(t.text);
@@ -2041,7 +2133,7 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
         <div class="daybars" style="height:80px">${days.map((d, i) => `<div class="${ymd(d) === today ? "today" : ""}"><i class="${rp.focus[i] ? "" : "zero"}" style="height:${rp.focus[i] / maxF * 100}%"></i><span>${DOW[d.getDay()]}</span></div>`).join("")}</div>
       </div>
       <div class="wsec"><h3>습관 <span>${rp.habits.length ? `달성률 ${rp.hRate}%` : ""}</span></h3>
-        ${rp.habits.length ? rp.habits.map(h => `<div class="hbar"><span>${esc(h.text)}</span><div class="meter ${h.n >= 7 ? "good" : ""}"><i style="width:${h.n / 7 * 100}%"></i></div><b>${h.n}/7</b></div>`).join("") : `<div class="muted small">등록한 습관이 없어요.</div>`}
+        ${rp.habits.length ? rp.habits.map(h => `<div class="hbar"><span>${esc(h.text)}</span><div class="meter ${h.t && h.n >= h.t ? "good" : ""}"><i style="width:${h.t ? h.n / h.t * 100 : 0}%"></i></div><b>${h.n}/${h.t}</b></div>`).join("") : `<div class="muted small">등록한 습관이 없어요.</div>`}
       </div>
       <div class="wsec"><h3>끝낸 일 <span>${rp.doneTodos.length}개 · 계획한 일정 ${rp.planned}개</span></h3>
         ${rp.doneTodos.length ? `<div class="small" style="color:var(--fg2)">${rp.doneTodos.slice(0, 8).map(t => `· ${esc(t)}`).join("<br>")}${rp.doneTodos.length > 8 ? `<br>그 밖에 ${rp.doneTodos.length - 8}개` : ""}</div>` : `<div class="muted small">이번 주에 체크한 할 일이 없어요.</div>`}
@@ -2218,8 +2310,8 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
     const trend = [5, 4, 3, 2, 1, 0].map(k => { const d = new Date(y, m - k, 1); return { label: `${d.getMonth() + 1}월`, v: sumOf(inMonth(S.ledger, d), "expense"), cur: k === 0 }; });
     const byCat = monthCatSpend(ms), cats = Object.entries(byCat).sort((a, b) => b[1] - a[1]);
     const focusT = focusMin(f => inM(f.date)), fDays = ds.map(d => ({ d, v: focusMin(f => f.date === d) })), fBest = fDays.reduce((a, b) => (b.v > a.v ? b : a), { d: "", v: 0 });
-    const habits = routineList().map(rt => ({ text: rt.text, n: ds.filter(d => d <= today && habitOn(rt.id, d)).length }));
-    const hRate = habits.length ? Math.round(habits.reduce((a, h) => a + h.n, 0) / (habits.length * elapsed) * 100) : 0;
+    const habits = routineList().map(rt => { const sc = habitScore(rt, ds.filter(d => d <= today)); return { text: rt.text, n: sc.done, t: sc.target }; });
+    const hT = habits.reduce((a, h) => a + h.t, 0), hRate = hT ? Math.round(habits.reduce((a, h) => a + h.n, 0) / hT * 100) : 0;
     let done = 0;
     for (const t of S.todos) { if (t.done && t.doneAt && inM(ymd(new Date(t.doneAt)))) done++; for (const h of t.history || []) if (inM(h)) done++; }
     const planned = ds.reduce((a, d) => a + eventsOn(d).filter(e => !isFixed(e)).length, 0);
@@ -2250,7 +2342,7 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
         <div class="muted small">하루 평균 ${hm(Math.round(rp.focusT / rp.elapsed))}</div>
       </div>
       <div class="wsec"><h3>습관 <span>${rp.habits.length ? `달성률 ${rp.hRate}%` : ""}</span></h3>
-        ${rp.habits.length ? rp.habits.map(h => `<div class="hbar"><span>${esc(h.text)}</span><div class="meter ${h.n >= rp.elapsed ? "good" : ""}" style="background:var(--card)"><i style="width:${h.n / rp.elapsed * 100}%"></i></div><b>${h.n}/${rp.elapsed}</b></div>`).join("") : `<div class="muted small">등록한 습관이 없어요.</div>`}
+        ${rp.habits.length ? rp.habits.map(h => `<div class="hbar"><span>${esc(h.text)}</span><div class="meter ${h.t && h.n >= h.t ? "good" : ""}" style="background:var(--card)"><i style="width:${h.t ? h.n / h.t * 100 : 0}%"></i></div><b>${h.n}/${h.t}</b></div>`).join("") : `<div class="muted small">등록한 습관이 없어요.</div>`}
       </div>
       <div class="wsec"><h3>할 일과 일정</h3>
         <div class="mstat"><div><span>끝낸 할 일</span><b>${rp.done}개</b></div><div><span>잡은 일정</span><b>${rp.planned}개</b></div><div><span>일기 쓴 날</span><b>${rp.entries.length}일</b></div></div>
@@ -2273,6 +2365,69 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
     else { const now = new Date(), last = new Date(moCursor.getFullYear(), moCursor.getMonth() + 1, 0); $("sh-monthly").hidden = true; openWeekly(last < now ? last : now); }
   });
 
+  // ---- swipe to delete
+  const SWIPE = { todo: ["todos", x => x.text, "할 일"], tx: ["ledger", x => x.memo || (CAT[x.cat] || CAT.etc).name, "내역"], habit: ["routines", x => x.text, "습관"], dday: ["ddays", x => x.title, "디데이"], rec: ["recurring", x => x.name, "고정 지출"] };
+  const SW_W = 84;
+  let sw = null, swOpen = null, swEat = false, swEatTimer = 0, swEatOnUp = false;
+  const swBody = w => w.querySelector(":scope > .swipe-body");
+  function setSwipe(w, x) {
+    const b = swBody(w); if (!b) return;
+    b.style.transform = x ? `translateX(${x}px)` : "";
+    if (x) w.classList.add("open"); else setTimeout(() => { if (!b.style.transform) w.classList.remove("open"); }, 240);
+  }
+  function closeSwipe() { if (swOpen) { setSwipe(swOpen, 0); swOpen = null; } }
+  // swallow only the click that the browser sends right after this gesture ends
+  const eatClick = () => { swEat = true; clearTimeout(swEatTimer); swEatTimer = setTimeout(() => { swEat = false; }, 80); };
+  document.addEventListener("pointerup", () => { if (swEatOnUp) { swEatOnUp = false; eatClick(); } }, true);
+  document.addEventListener("pointercancel", () => { if (swEatOnUp) { swEatOnUp = false; swEat = false; } }, true);
+  async function swipeDelete(w) {
+    const i = w.dataset.swipe.indexOf(":"), kind = w.dataset.swipe.slice(0, i), id = w.dataset.swipe.slice(i + 1), conf = SWIPE[kind];
+    if (!conf || !canWrite) return;
+    const [coll, nameOf, what] = conf, item = S[coll].find(x => x.id === id);
+    if (!item) return;
+    swOpen = null; setSwipe(w, -w.offsetWidth);
+    try {
+      await del(coll, id);
+      if (kind === "habit" && !$("sh-routines").hidden) renderRoutineSheet();
+      toast(`${what} '${nameOf(item)}'을(를) 지웠어요`, async () => { await put(coll, item); if (kind === "habit" && !$("sh-routines").hidden) renderRoutineSheet(); });
+    } catch (ex) { setSwipe(w, 0); toast("지우지 못했어요"); }
+  }
+  document.addEventListener("pointerdown", e => {
+    const w = e.target.closest && e.target.closest(".swipe");
+    if (swOpen) {
+      if (w === swOpen && e.target.closest(".swipe-del")) return;
+      closeSwipe(); swEat = true; swEatOnUp = true; return;
+    }
+    if (!w || !canWrite || e.target.closest(".swipe-del") || (e.pointerType === "mouse" && e.button !== 0)) return;
+    sw = { w, id: e.pointerId, x: e.clientX, y: e.clientY, dx: 0, on: false };
+  });
+  document.addEventListener("pointermove", e => {
+    if (!sw || e.pointerId !== sw.id) return;
+    const dx = e.clientX - sw.x, dy = e.clientY - sw.y;
+    if (!sw.on) {
+      if (Math.abs(dx) < 10 && Math.abs(dy) < 10) return;
+      if (Math.abs(dy) >= Math.abs(dx) || dx > 0) { sw = null; return; }
+      sw.on = true; sw.w.classList.add("dragging");
+    }
+    sw.dx = dx; setSwipe(sw.w, Math.max(-sw.w.offsetWidth, Math.min(0, dx)));
+  });
+  function endSwipe(e) {
+    if (!sw || (e && e.pointerId !== sw.id)) return;
+    const s = sw; sw = null;
+    if (!s.on) return;
+    s.w.classList.remove("dragging"); eatClick();
+    if (e && e.type === "pointercancel") return setSwipe(s.w, 0);
+    if (s.dx < -s.w.offsetWidth * 0.55) return swipeDelete(s.w);
+    if (s.dx < -40) { setSwipe(s.w, -SW_W); swOpen = s.w; } else setSwipe(s.w, 0);
+  }
+  document.addEventListener("pointerup", endSwipe);
+  document.addEventListener("pointercancel", endSwipe);
+  document.addEventListener("click", e => {
+    const d = e.target.closest && e.target.closest(".swipe-del");
+    if (d) { e.stopPropagation(); e.preventDefault(); return swipeDelete(d.closest(".swipe")); }
+    if (swEat) { e.stopPropagation(); e.preventDefault(); swEat = false; }
+  }, true);
+
   // ---- budget sheet
   function openBudget() {
     if (!canWrite) return;
@@ -2291,22 +2446,53 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
   // ---- habits sheet
   function renderRoutineSheet() {
     const rts = routineList();
-    $("rt-list").innerHTML = rts.length ? rts.map(r => `<div class="todo" style="grid-template-columns:minmax(0,1fr) auto"><span class="ttext"><b>${esc(r.text)}</b></span><button class="btn sm danger" type="button" data-rdel="${esc(r.id)}">삭제</button></div>`).join("")
+    $("rt-list").innerHTML = rts.length ? rts.map(r => swipeWrap("habit", r.id, `<button type="button" class="rtrow" data-hedit="${esc(r.id)}"><span style="min-width:0"><b>${esc(r.text)}</b><small>${habitSched(r)}</small></span><span class="muted small">${habitStreak(r)}</span></button>`)).join("")
       : `<div class="empty-line">아직 습관이 없어요.</div>`;
   }
-  function openRoutines() { if (!canWrite) return; renderRoutineSheet(); openSheet("sh-routines", "rt-text"); }
-  $("f-routine").addEventListener("submit", async e => {
-    e.preventDefault();
-    const text = $("rt-text").value.trim(); if (!text) return $("rt-text").focus();
-    $("rt-text").value = "";
-    try { await put("routines", { id: newId(), text, order: S.routines.length + 1, createdAt: new Date().toISOString() }); renderRoutineSheet(); }
-    catch (ex) { toast(saveErr(ex)); }
+  function openRoutines() { if (!canWrite) return; renderRoutineSheet(); openSheet("sh-routines", "rt-new"); }
+  $("rt-new").addEventListener("click", () => openHabit({ id: newId(), text: "", freq: "daily" }, true));
+  $("rt-list").addEventListener("click", e => { const he = e.target.closest("[data-hedit]"); if (!he) return; const x = S.routines.find(y => y.id === he.dataset.hedit); if (x) openHabit(x, false); });
+  $("hb-wd").innerHTML = [1, 2, 3, 4, 5, 6, 0].map(d => `<label><input type="checkbox" value="${d}" name="hbwd"><span>${DOW[d]}</span></label>`).join("");
+  let hbEdit = null, hbN = 3;
+  function syncHbFreq() {
+    const f = (document.querySelector('input[name="hbfreq"]:checked') || {}).value || "daily";
+    $("hb-daysbox").hidden = f !== "days"; $("hb-weekbox").hidden = f !== "weekly"; $("hb-n").textContent = `${hbN}회`;
+  }
+  function openHabit(r, isNew) {
+    if (!canWrite) return;
+    hbEdit = { r, isNew };
+    const f = habitFreq(r);
+    $("hb-head").textContent = isNew ? "새 습관" : "습관 편집"; $("hb-text").value = r.text || "";
+    $(`hb-${f}`).checked = true;
+    const days = f === "days" ? r.days : [1, 2, 3, 4, 5];
+    document.querySelectorAll('input[name="hbwd"]').forEach(i => { i.checked = days.includes(Number(i.value)); });
+    hbN = f === "weekly" ? Number(r.perWeek) : 3; syncHbFreq(); showErr("hb-err", "");
+    if (isNew) $("hb-del").innerHTML = "";
+    else delButtons("hb-del", "습관 삭제", async () => {
+      const snap = { ...r };
+      try { await del("routines", snap.id); closeSheet("sh-habit"); renderRoutineSheet(); toast(`'${snap.text}' 습관을 지웠어요`, async () => { await put("routines", snap); renderRoutineSheet(); }); }
+      catch (ex) { showErr("hb-err", "삭제하지 못했어요. 잠시 후 다시 시도해 주세요."); }
+    });
+    openSheet("sh-habit", "hb-text");
+  }
+  document.querySelectorAll('input[name="hbfreq"]').forEach(i => i.addEventListener("change", syncHbFreq));
+  $("f-habit").addEventListener("click", e => {
+    const q = e.target.closest("[data-hbquick]");
+    if (q) { const set = q.dataset.hbquick.split(",").map(Number); document.querySelectorAll('input[name="hbwd"]').forEach(i => { i.checked = set.includes(Number(i.value)); }); return; }
+    const st = e.target.closest("[data-hbstep]");
+    if (st) { hbN = Math.min(6, Math.max(1, hbN + Number(st.dataset.hbstep))); syncHbFreq(); }
   });
-  $("rt-list").addEventListener("click", async e => {
-    const b = e.target.closest("[data-rdel]"); if (!b) return;
-    const r = S.routines.find(x => x.id === b.dataset.rdel); if (!r) return;
-    try { await del("routines", r.id); renderRoutineSheet(); toast(`'${r.text}' 습관을 지웠어요`, async () => { await put("routines", r); renderRoutineSheet(); }); }
-    catch (ex) { toast("지우지 못했어요"); }
+  $("f-habit").addEventListener("submit", async e => {
+    e.preventDefault(); if (!hbEdit) return;
+    const text = $("hb-text").value.trim();
+    if (!text) { showErr("hb-err", "습관 이름을 적어 주세요."); return $("hb-text").focus(); }
+    const f = (document.querySelector('input[name="hbfreq"]:checked') || {}).value || "daily";
+    const days = [...document.querySelectorAll('input[name="hbwd"]:checked')].map(i => Number(i.value));
+    if (f === "days" && !days.length) { showErr("hb-err", "하는 요일을 하나 이상 골라 주세요."); return; }
+    const base = hbEdit.r;
+    const r = { ...base, text: text.slice(0, 80), freq: f === "days" && days.length === 7 ? "daily" : f, days: f === "days" ? days : [], perWeek: f === "weekly" ? hbN : 0, order: base.order ?? S.routines.length + 1, createdAt: base.createdAt || new Date().toISOString() };
+    try { await put("routines", r); closeSheet("sh-habit"); renderRoutineSheet(); toast(hbEdit.isNew ? `'${r.text}' 습관을 만들었어요 · ${habitSched(r)}` : "저장했어요"); }
+    catch (ex) { showErr("hb-err", saveErr(ex)); }
   });
   async function toggleHabit(id, ds) {
     if (!canWrite || !DATE_RE.test(ds) || ds > todayStr()) return;
@@ -2524,6 +2710,7 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
     const jm = t.closest("[data-jmonth]"); if (jm) { jcursor = new Date(jcursor.getFullYear(), jcursor.getMonth() + Number(jm.dataset.jmonth), 1); return renderReview(); }
     const rcb = t.closest("[data-rec]"); if (rcb) { const o = S.recurring.find(x => x.id === rcb.dataset.rec); if (o) openRec(o, false); return; }
     const ph = t.closest("[data-photo]"); if (ph) { e.stopPropagation(); return openPhoto(ph.dataset.photo); }
+    const he = t.closest("[data-hedit]"); if (he) { const x = S.routines.find(y => y.id === he.dataset.hedit); if (x) openHabit(x, false); return; }
     const hb = t.closest("[data-habit]"); if (hb) { const [id, ds] = hb.dataset.habit.split("|"); return toggleHabit(id, ds); }
     const en = t.closest("[data-energy]");
     if (en) { if (!canWrite) return; const v = Number(en.dataset.energy), cur = energyOf(dayDoc(todayStr())); try { await saveDay(todayStr(), { energy: cur === v ? 0 : v }); } catch (ex) { toast("저장하지 못했어요"); } return; }
@@ -2673,7 +2860,7 @@ mark { background: var(--orange-soft); color: inherit; border-radius: 3px; paddi
     const base = S.events.slice(0, 200).map(e => `id=${e.id} | ${e.title} | 시작일 ${e.date} | ${e.allDay ? "종일" : e.start + "~" + (e.end || "")} | 분류 ${e.cat} | 반복 ${e.repeat || "none"}${e.until ? "~" + e.until : ""}`);
     const todos = [...openTodos(), ...S.todos.filter(t => t.done).slice(-10)].map(t => `id=${t.id} | ${t.text} | 마감 ${t.due || "없음"}${t.repeat && t.repeat !== "none" ? ` | 반복 ${t.repeat}` : ""} | ${t.done ? "완료" : "미완료"}`);
     const rd = d.routinesDone || [];
-    const rts = routineList().map(r => `id=${r.id} | ${r.text} | 오늘 ${rd.includes(r.id) ? "체크함" : "아직"} | ${streakFrom(ds => habitOn(r.id, ds))}일 연속`);
+    const rts = routineList().map(r => `id=${r.id} | ${r.text} | 주기 ${habitSched(r)}${habitFreq(r) === "weekly" ? ` (이번 주 ${habitWeekCount(r, n)}회 함)` : ""} | 오늘 ${rd.includes(r.id) ? "체크함" : habitDueOn(r, today) ? "아직" : "쉬는 요일"} | ${habitStreak(r) || "연속 없음"}`);
     const ws = weekStart(n), st = weekStats(weekDays(n));
     const reviews = S.days.filter(hasEntry).sort((a, b) => b.id.localeCompare(a.id)).slice(0, 7).map(x => `${x.id} | 날씨: ${MOOD[x.mood] ? MOOD[x.mood].name : "-"} | 한 줄: ${entryLine(x) || "-"} | 내일 먼저: ${entryNext(x) || "-"}`);
     const focus = [...S.focus].sort((a, b) => (b.createdAt || "").localeCompare(a.createdAt || "")).slice(0, 10).map(f => `${f.date} | ${f.minutes}분 | ${f.text || "주제 없이 몰입"}${f.rating ? " | " + RATE[f.rating] : ""}`);
@@ -2765,7 +2952,7 @@ action 형식:
 {"type":"add_recurring","name":"","amount":0,"day":1,"cat":"housing","method":"card"}  (매달 나가는 고정 지출: 월세, 통신비, 구독료. day는 매달 결제일 1~31)
 {"type":"complete_todo","id":""}
 {"type":"star_todo","id":"","star":true}
-{"type":"add_habit","text":""}
+{"type":"add_habit","text":"","days":[],"perWeek":0}  (days: 하는 요일 숫자 0=일 1=월 … 6=토, "평일"=[1,2,3,4,5]. "주 3회"처럼 횟수면 perWeek. 둘 다 없으면 매일)
 {"type":"check_habit","id":"","date":"YYYY-MM-DD"}
 {"type":"set_energy","level":3}
 {"type":"add_journal","date":"YYYY-MM-DD","mood":"sun","line":"","tomorrow":""}
@@ -2892,9 +3079,11 @@ action 형식:
     }
     if (type === "add_habit") {
       const text = String(a.text || "").trim(); if (!text) throw new Error("습관 내용이 없어요");
-      const r = { id: newId(), text: text.slice(0, 80), order: S.routines.length + 1, createdAt: nowIso };
+      const days = Array.isArray(a.days) ? [...new Set(a.days.map(Number).filter(d => d >= 0 && d <= 6))] : [], pw = Math.min(6, Math.max(0, Math.round(Number(a.perWeek) || 0)));
+      const freq = days.length && days.length < 7 ? "days" : pw ? "weekly" : "daily";
+      const r = { id: newId(), text: text.slice(0, 80), freq, days: freq === "days" ? days : [], perWeek: freq === "weekly" ? pw : 0, order: S.routines.length + 1, createdAt: nowIso };
       await put("routines", r);
-      return { label: `습관 추가 · ${r.text}`, undo: () => del("routines", r.id) };
+      return { label: `습관 추가 · ${r.text} (${habitSched(r)})`, undo: () => del("routines", r.id) };
     }
     if (type === "check_habit") {
       const r = findBy("routines", a.id, "습관"), ds = DATE_RE.test(String(a.date || "")) && a.date <= todayStr() ? a.date : todayStr();
